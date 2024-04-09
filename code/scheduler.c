@@ -1,5 +1,6 @@
 #include "headers.h"
-int *shr;
+#include <string.h>
+void *shr;
 struct Process        // to store process information and send them to scheduler
 {                     // long mtype;//FOR MESSAGE
     int process_id;   // process id
@@ -13,14 +14,22 @@ struct Process        // to store process information and send them to scheduler
 
     // int process_memory;
 };
-int number_of_finish_process = 0; // number of finished process
-void handleChild(int signum)
+
+struct Time
 {
-    number_of_finish_process++;
-    /// calculation of TA,WA here for the finished child
-    // then remove it from queue
-    // finish time calculated here this process can get it it is the first process in list I think that
-    signal(SIGCHLD, handleChild);
+    int runnunig_time;
+    int start_time;
+};
+
+int number_of_finish_process = 0; // number of finished process
+void handleChild(int signum)      // this is when a process send this to scheduler
+{
+    // this occure when process is stoped by scheduler or terminated
+    // Time time;
+    // memcpy(&time, ( Time *)shr, sizeof(Time));
+    printf("start at  %d and runn %d\n", ((struct Time *)shr)->start_time,((struct Time *)shr)->runnunig_time);
+
+    signal(SIGUSR1, handleChild);
 }
 void ClearCock(int signum) // it process_generator interrupt;
 {
@@ -32,19 +41,18 @@ void ClearCock(int signum) // it process_generator interrupt;
 }
 int main(int argc, char *argv[])
 {
-    signal(SIGCHLD, handleChild); // if child terminate process
+    signal(SIGUSR1, handleChild); // if child terminate process
     signal(SIGINT, ClearCock);
-
-    int msg_id = atoi(argv[1]);                   // ID OF MESSAGE QUEUE
-    int shm_id = atoi(argv[2]);                   // ID OF Shared memory
-    int algorithm = atoi(argv[3]);                // i RR 2 SRTN 3 HPF //Mohammed use this
-    int slice = atoi(argv[4]);                    // for RR Algorithm  //Mohammed and this
+    // char slic_num[10];
+    int msg_id = atoi(argv[1]);    // ID OF MESSAGE QUEUE
+    int shm_id = atoi(argv[2]);    // ID OF Shared memory
+    int algorithm = atoi(argv[3]); // i RR 2 SRTN 3 HPF //Mohammed use this
+    int slice = atoi(argv[4]);
     int number_of_system_process = atoi(argv[5]); // all system processes
     char process_run_time[10];                    // to send it to each process
     char share_id[10];                            // to send it to each process
     sprintf(share_id, "%d", shm_id);
     initClk();
-    printf("%d", getClk());
     int i = 0;
     int prev = getClk();
     // to check for each second not apart of second
@@ -76,18 +84,25 @@ int main(int argc, char *argv[])
                         i++;
                     }
 
-                    process.child_id = child_id;     // set process id
-                    kill(process.child_id, SIGTSTP); // untill scheduing it
+                    process.child_id = child_id; // set process id
+                    // algorithm of sorting based on scheduler algorithm
+                    // here you can stop the running process before sorting in the ready queue
+                    // beacuse I think it will take time Mohammed
                 }
             }
 
-            /*
-
-                           Scheduler algorithm must be here Mohammed
-                           */
+            // here choose which one should be running based on algorithm
+            /*if STRN and HPF will take the first process in queue
+            //if round robin based on time slice
+            //than signal cont this process
+            Scheduler algorithm must be here Mohammed
+            //when want to stop processes send it user2 signal
+            to contoinue it send sigcon signal
+            */
             /*
             when want to run a process send it con signal
             */
+
             /*ali
              * print output file must be here also
              */

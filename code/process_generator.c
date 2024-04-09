@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
   signal(SIGINT, clearResources);
   int algrithm_number;
   int slice = 0;
-  int number_of_process = 10;
+  int number_of_process = 0;//ali must set it by the number of readed processes
   char algorithm[2], slic_num[10], msg[10], shm[10], num_processes[30]; // i use this when convert integer to string
   // TODO Initialization
   // 1. Read the input files.
@@ -38,6 +38,8 @@ int main(int argc, char *argv[])
    * number_of_process = ?? number of readed processess do this
    */
   ////////dummy untill fill it
+  //here must update number_of_process
+  number_of_process=1;//dummy
   struct Process processes[2];
   processes[0].arrive_time = 1;
   processes[0].process_id = 1;
@@ -75,7 +77,7 @@ int main(int argc, char *argv[])
   // 3. Initiate clock process //done.
   ////////////////////////ipc resources////////////////////////////
   msg_id = msgget(IPC_PRIVATE, 0666 | IPC_CREAT); // This is the IPC communication between scheduler and process generator
-  shm_id = shmget(IPC_PRIVATE, 4, 0666 | IPC_CREAT);
+  shm_id = shmget(IPC_PRIVATE, 8, 0666 | IPC_CREAT);
   if (msg_id == -1 || shm_id == -1)
   {
     printf("Cannot create message queue or shared memory\n");
@@ -116,7 +118,7 @@ int main(int argc, char *argv[])
       int prev = getClk(); // initial time is equal to 0
       int x;
       int i = 0;                            // for dummy simulation
-      int send, size, number_processes = 2; // size is the size of message number_processess is the number of process in the file
+      int send, size; // size is the size of message number_processess is the number of process in the file
       printf("current time is %d\n", prev);
       // To get time use this
       while (1)
@@ -129,7 +131,7 @@ int main(int argc, char *argv[])
           printf("current time is %d\n", x);
           // 6. Send the information to the scheduler at the appropriate time.//done
 
-          if (i != number_processes && processes[i].arrive_time == x) // if there is a process arrive in this time send it to scheduler
+          if (i != number_of_process && processes[i].arrive_time == x) // if there is a process arrive in this time send it to scheduler
           {
             size = sizeof(processes[i]);
             send = msgsnd(msg_id, &(processes[i]), size, !IPC_NOWAIT);
