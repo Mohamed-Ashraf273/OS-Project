@@ -1,10 +1,10 @@
 #include "headers.h"
 #include <string.h>
-#include"Queue.h"
 #include <stdio.h>
 #include <stdlib.h>
-
+#include"LL.h"
 void *shr;
+LinkedList Ready;
 struct Process        // to store process information and send them to scheduler
 {                     // long mtype;//FOR MESSAGE
     int process_id;   // process id
@@ -60,8 +60,7 @@ void ClearCock(int signum) // it process_generator interrupt;
 }
 int main(int argc, char *argv[])
 {
-    Queue queue;
-    initializeQueue(&queue);
+    initializeList(&Ready);
     signal(SIGUSR1, handleChild); // if child terminate process
     signal(SIGINT, ClearCock);
     // char slic_num[10];
@@ -106,6 +105,7 @@ int main(int argc, char *argv[])
                     }
 
                     process.child_id = child_id; // set process id
+                    kill(process.child_id,SIGUSR2);
                     // algorithm of sorting based on scheduler algorithm
                     // here you can stop the running process before sorting in the ready queue
                     // beacuse I think it will take time Mohammed
