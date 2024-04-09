@@ -22,5 +22,7 @@ int removeFromHead(LinkedList *list);
 int removeFromTail(LinkedList *list);
 void removeNode(LinkedList *list, Node *target);
 void displayList(LinkedList *list);
+int isEmpty(LinkedList* list);
+void sortAscending(LinkedList *list);
 
 #endif /* LL_H */

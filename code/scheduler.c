@@ -28,19 +28,6 @@ struct Time
 
 
 int number_of_finish_process = 0; // number of finished process
-void RoundRobin(int time_slice) {
-    // Implement Round Robin scheduling logic
-}
-
-// Shortest Remaining Time Next (SRTN) scheduling algorithm
-void SRTN() {
-    // Implement SRTN scheduling logic
-}
-
-// Highest Priority First (HPF) scheduling algorithm
-void HPF() {
-    // Implement HPF scheduling logic
-}
 void handleChild(int signum)      // this is when a process send this to scheduler
 {
     // this occure when process is stoped by scheduler or terminated
@@ -103,12 +90,28 @@ int main(int argc, char *argv[])
                         shr = shmat(shm_id, NULL, 0);
                         i++;
                     }
+                    
 
                     process.child_id = child_id; // set process id
                     kill(process.child_id,SIGUSR2);
+                    //Nesma, can we stop the clock here then continuing it below the switch code? 
                     // algorithm of sorting based on scheduler algorithm
                     // here you can stop the running process before sorting in the ready queue
                     // beacuse I think it will take time Mohammed
+                    switch (algorithm) {
+                        case 1: // Round Robin
+
+                        break;
+                        case 2: // Shortest Remaining Time Next (SRTN)
+                        break;
+                        case 3: // Highest Priority First (HPF)
+
+                        break;
+                        default:
+                        printf("Invalid algorithm!\n");
+                        break;
+                        }
+                    
                 }
             }
 
@@ -125,13 +128,13 @@ int main(int argc, char *argv[])
             */
            switch (algorithm) {
             case 1: // Round Robin
-                RoundRobin(slice);
+                
                 break;
             case 2: // Shortest Remaining Time Next (SRTN)
-                SRTN();
+                
                 break;
             case 3: // Highest Priority First (HPF)
-                HPF();
+                
                 break;
             default:
                 printf("Invalid algorithm!\n");

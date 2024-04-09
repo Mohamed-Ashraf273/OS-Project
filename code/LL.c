@@ -125,3 +125,36 @@ void displayList(LinkedList *list) {
     }
     printf("\n");
 }
+int isEmpty(LinkedList* list){
+    if(list->head==list->tail){
+        if(list->head==NULL){
+            return 1;
+        }
+    }
+    return 0;
+}
+// Function to sort the list in ascending order (Bubble Sort)
+void sortAscending(LinkedList *list) {
+    if (list->head == NULL || list->head == list->tail) {
+        return; // List is empty or has only one element
+    }
+
+    int swapped;
+    Node *ptr1 = NULL;
+
+    do {
+        swapped = 0;
+        Node *ptr2 = list->head;
+        while (ptr2->next != ptr1) {
+            if (ptr2->data > ptr2->next->data) {
+                // Swap the data
+                int temp = ptr2->data;
+                ptr2->data = ptr2->next->data;
+                ptr2->next->data = temp;
+                swapped = 1;
+            }
+            ptr2 = ptr2->next;
+        }
+        ptr1 = ptr2;
+    } while (swapped);
+}
