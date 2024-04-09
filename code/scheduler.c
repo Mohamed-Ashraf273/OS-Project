@@ -1,5 +1,7 @@
 #include "headers.h"
 #include <string.h>
+
+
 void *shr;
 struct Process        // to store process information and send them to scheduler
 {                     // long mtype;//FOR MESSAGE
