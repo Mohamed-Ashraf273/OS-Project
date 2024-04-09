@@ -1,6 +1,7 @@
+
 // Node structure for the queue
 typedef struct Node {
-    int data;
+    void *data;
     struct Node *next;
 } Node;
 
@@ -13,7 +14,7 @@ typedef struct {
 // Function prototypes
 void initializeQueue(Queue *queue);
 int isEmpty(Queue *queue);
-void enqueue(Queue *queue, int data);
-int dequeue(Queue *queue);
+void enqueue(Queue *queue, void *data);
+void* dequeue(Queue *queue);
 void display(Queue *queue);
 

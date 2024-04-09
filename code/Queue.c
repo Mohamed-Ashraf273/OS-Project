@@ -14,7 +14,7 @@ int isEmpty(Queue *queue) {
 }
 
 // Function to enqueue an element into the queue
-void enqueue(Queue *queue, int data) {
+void enqueue(Queue *queue, void *data) {
     Node *newNode = (Node *)malloc(sizeof(Node));
     if (newNode == NULL) {
         printf("Memory allocation failed.\n");
@@ -33,12 +33,12 @@ void enqueue(Queue *queue, int data) {
 }
 
 // Function to dequeue an element from the queue
-int dequeue(Queue *queue) {
+void* dequeue(Queue *queue) {
     if (isEmpty(queue)) {
         printf("Queue is empty.\n");
-        return -1;
+        return NULL;
     }
-    int data = queue->front->data;
+    void *data = queue->front->data;
     Node *temp = queue->front;
     queue->front = queue->front->next;
     free(temp);
@@ -57,7 +57,7 @@ void display(Queue *queue) {
     Node *current = queue->front;
     printf("Queue: ");
     while (current != NULL) {
-        printf("%d ", current->data);
+        printf("%p ", current->data);
         current = current->next;
     }
     printf("\n");

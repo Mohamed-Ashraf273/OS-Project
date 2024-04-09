@@ -1,6 +1,6 @@
 #include "headers.h"
 #include <string.h>
-
+#include"Queue.h"
 
 void *shr;
 struct Process        // to store process information and send them to scheduler
@@ -22,6 +22,7 @@ struct Time
     int runnunig_time;
     int start_time;
 };
+Queue Ready;
 
 int number_of_finish_process = 0; // number of finished process
 void handleChild(int signum)      // this is when a process send this to scheduler
