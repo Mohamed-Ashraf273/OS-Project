@@ -6,7 +6,7 @@ typedef struct Node {
 } Node;
 
 // Queue structure
-typedef struct {
+typedef struct Queue{
     Node *front;
     Node *rear;
 } Queue;

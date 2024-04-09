@@ -1,6 +1,8 @@
 #include "headers.h"
 #include <string.h>
 #include"Queue.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 void *shr;
 struct Process        // to store process information and send them to scheduler
@@ -22,9 +24,23 @@ struct Time
     int runnunig_time;
     int start_time;
 };
-Queue Ready;
+
+
 
 int number_of_finish_process = 0; // number of finished process
+void RoundRobin(int time_slice) {
+    // Implement Round Robin scheduling logic
+}
+
+// Shortest Remaining Time Next (SRTN) scheduling algorithm
+void SRTN() {
+    // Implement SRTN scheduling logic
+}
+
+// Highest Priority First (HPF) scheduling algorithm
+void HPF() {
+    // Implement HPF scheduling logic
+}
 void handleChild(int signum)      // this is when a process send this to scheduler
 {
     // this occure when process is stoped by scheduler or terminated
@@ -44,6 +60,8 @@ void ClearCock(int signum) // it process_generator interrupt;
 }
 int main(int argc, char *argv[])
 {
+    Queue queue;
+    initializeQueue(&queue);
     signal(SIGUSR1, handleChild); // if child terminate process
     signal(SIGINT, ClearCock);
     // char slic_num[10];
@@ -105,7 +123,24 @@ int main(int argc, char *argv[])
             /*
             when want to run a process send it con signal
             */
+           switch (algorithm) {
+            case 1: // Round Robin
+                RoundRobin(slice);
+                break;
+            case 2: // Shortest Remaining Time Next (SRTN)
+                SRTN();
+                break;
+            case 3: // Highest Priority First (HPF)
+                HPF();
+                break;
+            default:
+                printf("Invalid algorithm!\n");
+                break;
+        }
 
+
+
+            
             /*ali
              * print output file must be here also
              */
