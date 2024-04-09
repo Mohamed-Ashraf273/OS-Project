@@ -3,7 +3,7 @@
 
 // Node structure
 typedef struct Node {
-    int data;
+    void *data;
     struct Node *next;
 } Node;
 
@@ -15,14 +15,9 @@ typedef struct {
 
 // Function prototypes
 void initializeList(LinkedList *list);
-void addToHead(LinkedList *list, int data);
-void addToTail(LinkedList *list, int data);
-Node* searchNode(LinkedList *list, int data);
-int removeFromHead(LinkedList *list);
-int removeFromTail(LinkedList *list);
+void addToHead(LinkedList *list, void *data);
+void addToTail(LinkedList *list, void *data);
 void removeNode(LinkedList *list, Node *target);
 void displayList(LinkedList *list);
-int isEmpty(LinkedList* list);
 void sortAscending(LinkedList *list);
-
 #endif /* LL_H */

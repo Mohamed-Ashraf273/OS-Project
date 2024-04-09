@@ -100,12 +100,13 @@ int main(int argc, char *argv[])
                     // beacuse I think it will take time Mohammed
                     switch (algorithm) {
                         case 1: // Round Robin
-
+                        addToHead(&Ready,&process);
                         break;
                         case 2: // Shortest Remaining Time Next (SRTN)
+                        addToHead(&Ready,&process);
                         break;
                         case 3: // Highest Priority First (HPF)
-
+                        addToHead(&Ready,&process);
                         break;
                         default:
                         printf("Invalid algorithm!\n");

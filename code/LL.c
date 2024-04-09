@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include"LL.h"
+#include "LL.h"
+
 // Function to initialize the linked list
 void initializeList(LinkedList *list) {
     list->head = NULL;
@@ -8,7 +9,7 @@ void initializeList(LinkedList *list) {
 }
 
 // Function to add a node to the head of the list
-void addToHead(LinkedList *list, int data) {
+void addToHead(LinkedList *list, void *data) {
     Node *newNode = (Node *)malloc(sizeof(Node));
     if (newNode == NULL) {
         printf("Memory allocation failed.\n");
@@ -23,7 +24,7 @@ void addToHead(LinkedList *list, int data) {
 }
 
 // Function to add a node to the tail of the list
-void addToTail(LinkedList *list, int data) {
+void addToTail(LinkedList *list, void *data) {
     Node *newNode = (Node *)malloc(sizeof(Node));
     if (newNode == NULL) {
         printf("Memory allocation failed.\n");
@@ -40,64 +41,14 @@ void addToTail(LinkedList *list, int data) {
     }
 }
 
-// Function to search for a given node
-Node* searchNode(LinkedList *list, int data) {
-    Node *current = list->head;
-    while (current != NULL) {
-        if (current->data == data) {
-            return current;
-        }
-        current = current->next;
-    }
-    return NULL;
-}
-
-// Function to remove a node from the head of the list
-int removeFromHead(LinkedList *list) {
-    if (list->head == NULL) {
-        printf("List is empty.\n");
-        return -1;
-    }
-    int data = list->head->data;
-    Node *temp = list->head;
-    list->head = list->head->next;
-    free(temp);
-    if (list->head == NULL) {
-        list->tail = NULL;
-    }
-    return data;
-}
-
-// Function to remove a node from the tail of the list
-int removeFromTail(LinkedList *list) {
-    if (list->tail == NULL) {
-        printf("List is empty.\n");
-        return -1;
-    }
-    int data;
-    if (list->head == list->tail) {
-        // Only one node in the list
-        data = list->head->data;
-        free(list->head);
-        list->head = NULL;
-        list->tail = NULL;
-    } else {
-        Node *current = list->head;
-        while (current->next != list->tail) {
-            current = current->next;
-        }
-        data = list->tail->data;
-        free(list->tail);
-        list->tail = current;
-        list->tail->next = NULL;
-    }
-    return data;
-}
-
 // Function to remove a given node from the list
 void removeNode(LinkedList *list, Node *target) {
     if (list->head == target) {
-        removeFromHead(list);
+        list->head = list->head->next;
+        free(target);
+        if (list->head == NULL) {
+            list->tail = NULL;
+        }
         return;
     }
     Node *current = list->head;
@@ -120,41 +71,9 @@ void displayList(LinkedList *list) {
     Node *current = list->head;
     printf("List: ");
     while (current != NULL) {
-        printf("%d ", current->data);
+        // Assume data is an integer for demonstration
+        printf("%d ", *((int *)current->data));
         current = current->next;
     }
     printf("\n");
-}
-int isEmpty(LinkedList* list){
-    if(list->head==list->tail){
-        if(list->head==NULL){
-            return 1;
-        }
-    }
-    return 0;
-}
-// Function to sort the list in ascending order (Bubble Sort)
-void sortAscending(LinkedList *list) {
-    if (list->head == NULL || list->head == list->tail) {
-        return; // List is empty or has only one element
-    }
-
-    int swapped;
-    Node *ptr1 = NULL;
-
-    do {
-        swapped = 0;
-        Node *ptr2 = list->head;
-        while (ptr2->next != ptr1) {
-            if (ptr2->data > ptr2->next->data) {
-                // Swap the data
-                int temp = ptr2->data;
-                ptr2->data = ptr2->next->data;
-                ptr2->next->data = temp;
-                swapped = 1;
-            }
-            ptr2 = ptr2->next;
-        }
-        ptr1 = ptr2;
-    } while (swapped);
 }
