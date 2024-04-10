@@ -89,36 +89,22 @@ void AddSortedPriority(LinkedList *list, struct Process  *data){
         }
     }
 }
-void AddSortedRemainigTime(LinkedList *list, struct Process  *data){
-     Node *newNode = (Node *)malloc(sizeof(Node));
-    if (newNode == NULL) {
-        printf("Memory allocation failed.\n");
-        return;
-    }
-    newNode->data = data;
-    if(list->head==NULL){//empty
-        list->head=list->tail=newNode;
-        newNode->next=NULL;
-    }else{
-        int RTime=data->running_time-RrunningT;//remaining time of newnode
-        if(RTime < ((list->head->data->running_time)-RrunningT)){
-            newNode->next = list->head;
-            list->head = newNode;
+void SortAccordingRT(LinkedList *list){
+    Node *current = list->head;
+    while (current != NULL) {
+        Node *nextNode = current->next;
+        Node *innerCurrent = Ready.head;
+        while (innerCurrent->next != NULL) {
+            Node *nextInnerNode = innerCurrent->next;
+            if (nextInnerNode->data->running_time - RrunningT < innerCurrent->data->running_time - RrunningT) {
+                // Swap the nodes
+                struct Process *temp = innerCurrent->data;
+                innerCurrent->data = nextInnerNode->data;
+                nextInnerNode->data = temp;
+            }
+            innerCurrent = innerCurrent->next;
         }
-        else{
-            Node* current=list->head;
-            while(current->next!=NULL && ((current->next->data->running_time)-RrunningT)<RTime){
-            current=current->next;
-            }
-            if (current->next==NULL){
-                current->next=newNode;
-                list->tail=newNode;
-            }
-            else{
-                newNode->next=current->next;
-                current->next=newNode;
-            }
-        }
+        current = nextNode;
     }
 }
 void RemH(LinkedList* list){//remove from head
@@ -172,7 +158,7 @@ void ClearCock(int signum) // it process_generator interrupt;
 }
 int main(int argc, char *argv[])
 {
-    initializeList(&Ready);
+    Node *RRPointer=Ready.head;// pointer points to the first process for RR Algo
     signal(SIGUSR1, handleChild); // if child terminate process
     signal(SIGINT, ClearCock);
     // char slic_num[10];
@@ -231,10 +217,11 @@ int main(int argc, char *argv[])
                         }
                         break;
                         case 2: // Shortest Remaining Time Next (SRTN) Sorted
-                        if(i!=0){
+                        if(i!=0){//if not the first time
                             kill(Ready.head->data->process_id,SIGUSR2);
                         }
-                        AddSortedRemainigTime(&Ready,&process);
+                        Add(&Ready,&process);
+                        SortAccordingRT(&Ready);
                         break;
                         case 3: // Highest Priority First (HPF) Sorted
                         AddSortedPriority(&Ready,&process);
@@ -265,7 +252,43 @@ int main(int argc, char *argv[])
             */
            switch (algorithm) {
             case 1: // Round Robin
-                
+                if(Ready.head->data->running_time == RrunningT){
+                    // If the running time of the process at the head matches RrunningT, remove the node pointed by RRPointer
+                    Node *current = Ready.head;
+                    Node *prev = NULL;
+                    // Traverse the list until RRPointer is found
+                    while (current != RRPointer && current != NULL) {
+                        prev = current;
+                        current = current->next;
+                    }
+                    // If RRPointer is found in the list, remove it
+                    if (current != NULL) {
+                        if (prev == NULL) {
+                            // If RRPointer is at the head of the list
+                            Ready.head = current->next;
+                            if (Ready.head == NULL) {
+                                Ready.tail = NULL;
+                            }
+                        } else {
+                            prev->next = current->next;
+                            if (prev->next == NULL) {
+                                Ready.tail = prev;
+                            }
+                        }
+                        free(current);
+                        }
+                    }
+                    else{
+                    if(RrunningT>=slice){
+                    //time it runs greater than or equal slice stop it
+                    kill(RRPointer->data->process_id,SIGUSR2);
+                    RRPointer=RRPointer->next->next;
+                    if(RRPointer==NULL){
+                        RRPointer=Ready.head;
+                    }
+                    kill(RRPointer->data->process_id,SIGCONT);
+                    }
+                }
                 break;
             case 2: // Shortest Remaining Time Next (SRTN)
                 kill(Ready.head->data->process_id,SIGCONT);
