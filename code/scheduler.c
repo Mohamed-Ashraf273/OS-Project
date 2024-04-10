@@ -2,9 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include"LL.h"
-void *shr;
-LinkedList Ready;
+
 struct Process        // to store process information and send them to scheduler
 {                     // long mtype;//FOR MESSAGE
     int process_id;   // process id
@@ -18,14 +16,136 @@ struct Process        // to store process information and send them to scheduler
 
     // int process_memory;
 };
-
+int RrunningT;
 struct Time
 {
     int runnunig_time;
     int start_time;
 };
+// Node structure
+typedef struct Node {
+    struct Process  *data;
+    struct Node *next;
+    struct Node *prev;
+} Node;
 
-
+// Linked list structure
+typedef struct {
+    Node *head;
+    Node *tail;
+} LinkedList;
+void initializeList(LinkedList *list) {
+    list->head = NULL;
+    list->tail = NULL;
+}
+void Add(LinkedList *list, struct Process  *data) {//add to head
+    Node *newNode = (Node *)malloc(sizeof(Node));
+    if (newNode == NULL) {
+        printf("Memory allocation failed.\n");
+        return;
+    }
+    newNode->data = data;
+    if(list->head==NULL){//empty
+        list->head=list->tail=newNode;
+        newNode->next=NULL;
+        newNode->prev=NULL;
+    }else{
+        if(list->head->next==NULL){
+            list->tail->prev=list->head;
+        }
+        newNode->next = list->head;
+        list->head = newNode;
+        
+    }
+}
+void AddSortedPriority(LinkedList *list, struct Process  *data){
+     Node *newNode = (Node *)malloc(sizeof(Node));
+    if (newNode == NULL) {
+        printf("Memory allocation failed.\n");
+        return;
+    }
+    newNode->data = data;
+    if(list->head==NULL){//empty
+        list->head=list->tail=newNode;
+        newNode->next=NULL;
+    }else{
+        if(newNode->data->priority<list->head->data->priority){
+            newNode->next = list->head;
+            list->head = newNode;
+        }
+        else{
+            Node* current=list->head;
+            while(current->next!=NULL && current->next->data->priority<newNode->data->priority){
+            current=current->next;
+            }
+            if (current->next==NULL){
+                current->next=newNode;
+                list->tail=newNode;
+            }
+            else{
+                newNode->next=current->next;
+                current->next=newNode;
+            }
+        }
+    }
+}
+void AddSortedRemainigTime(LinkedList *list, struct Process  *data){
+     Node *newNode = (Node *)malloc(sizeof(Node));
+    if (newNode == NULL) {
+        printf("Memory allocation failed.\n");
+        return;
+    }
+    newNode->data = data;
+    if(list->head==NULL){//empty
+        list->head=list->tail=newNode;
+        newNode->next=NULL;
+    }else{
+        int RTime=data->running_time-RrunningT;//remaining time of newnode
+        if(RTime < ((list->head->data->running_time)-RrunningT)){
+            newNode->next = list->head;
+            list->head = newNode;
+        }
+        else{
+            Node* current=list->head;
+            while(current->next!=NULL && ((current->next->data->running_time)-RrunningT)<RTime){
+            current=current->next;
+            }
+            if (current->next==NULL){
+                current->next=newNode;
+                list->tail=newNode;
+            }
+            else{
+                newNode->next=current->next;
+                current->next=newNode;
+            }
+        }
+    }
+}
+void RemH(LinkedList* list){//remove from head
+    if(list->head!=NULL){
+        Node* current=list->head;
+        list->head=list->head->next;
+        if(list->head==NULL){
+            list->tail=list->head;
+        }
+        current->next=NULL;
+        free(current);
+    }
+}
+void RemT(LinkedList* list){//remove from tail
+    if(list->tail!=NULL){
+        Node* current=list->tail;
+        list->tail=list->tail->prev;
+        if(list->tail==NULL){
+            list->head=list->tail;
+        }
+        current->next=NULL;
+        list->tail->next=NULL;
+        free(current);
+    }
+}
+void *shr;
+LinkedList Ready;
 
 int number_of_finish_process = 0; // number of finished process
 void handleChild(int signum)      // this is when a process send this to scheduler
@@ -33,7 +153,12 @@ void handleChild(int signum)      // this is when a process send this to schedul
     // this occure when process is stoped by scheduler or terminated
     // Time time;
     // memcpy(&time, ( Time *)shr, sizeof(Time));
-    printf("start at  %d and runn %d\n", ((struct Time *)shr)->start_time,((struct Time *)shr)->runnunig_time);
+    printf("start at  %d and run %d\n", ((struct Time *)shr)->start_time,((struct Time *)shr)->runnunig_time);
+    RrunningT=((struct Time *)shr)->runnunig_time;
+    //if process.runningtime = x then 
+    //calc. statistics ----> Ali
+    //add +1 number_of_finish_process --->mohamed
+    number_of_finish_process++;
 
     signal(SIGUSR1, handleChild);
 }
@@ -85,6 +210,8 @@ int main(int argc, char *argv[])
                 }
                 else // scheduler
                 {
+                    process.child_id = child_id; // set process id
+
                     if (i == 0) // for first time only
                     {
                         shr = shmat(shm_id, NULL, 0);
@@ -92,26 +219,35 @@ int main(int argc, char *argv[])
                     }
                     
 
-                    process.child_id = child_id; // set process id
-                    kill(process.child_id,SIGUSR2);
                     //Nesma, can we stop the clock here then continuing it below the switch code? 
                     // algorithm of sorting based on scheduler algorithm
                     // here you can stop the running process before sorting in the ready queue
                     // beacuse I think it will take time Mohammed
                     switch (algorithm) {
                         case 1: // Round Robin
-                        addToHead(&Ready,&process);
+                        Add(&Ready,&process);
+                        if(i==0){// if itis the first process arrives then run it
+                            kill(process.process_id,SIGCONT);
+                        }
                         break;
-                        case 2: // Shortest Remaining Time Next (SRTN)
-                        addToHead(&Ready,&process);
+                        case 2: // Shortest Remaining Time Next (SRTN) Sorted
+                        if(i!=0){
+                            kill(Ready.head->data->process_id,SIGUSR2);
+                        }
+                        AddSortedRemainigTime(&Ready,&process);
                         break;
-                        case 3: // Highest Priority First (HPF)
-                        addToHead(&Ready,&process);
+                        case 3: // Highest Priority First (HPF) Sorted
+                        AddSortedPriority(&Ready,&process);
+                        if(i==0){// if itis the first process arrives then run it
+                            kill(process.process_id,SIGCONT);
+                        }
+                        //sort list
                         break;
                         default:
                         printf("Invalid algorithm!\n");
                         break;
                         }
+                        
                     
                 }
             }
@@ -132,10 +268,18 @@ int main(int argc, char *argv[])
                 
                 break;
             case 2: // Shortest Remaining Time Next (SRTN)
-                
+                kill(Ready.head->data->process_id,SIGCONT);
+                if(Ready.head->data->running_time == RrunningT){
+                    RemH(&Ready);
+                }
                 break;
             case 3: // Highest Priority First (HPF)
-                
+                //if processor is idle then run a process
+                //else don't run another one just complete the running one
+                if(Ready.head->data->running_time == RrunningT){
+                    RemH(&Ready);
+                    kill(Ready.head->data->process_id,SIGCONT);
+                }
                 break;
             default:
                 printf("Invalid algorithm!\n");
