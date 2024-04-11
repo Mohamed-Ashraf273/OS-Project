@@ -13,7 +13,7 @@ struct Process        // to store process information and send them to scheduler
     int start;        // first time it running by cpu
     char state[8];    // state of the process
     int child_id;     // when fork to use it when make signals
-
+    int remainingTime;
     // int process_memory;
 };
 int RrunningT;
@@ -90,21 +90,22 @@ void AddSortedPriority(LinkedList *list, struct Process  *data){
     }
 }
 void SortAccordingRT(LinkedList *list){
-    Node *current = list->head;
-    while (current != NULL) {
-        Node *nextNode = current->next;
-        Node *innerCurrent = Ready.head;
-        while (innerCurrent->next != NULL) {
-            Node *nextInnerNode = innerCurrent->next;
-            if (nextInnerNode->data->running_time - RrunningT < innerCurrent->data->running_time - RrunningT) {
-                // Swap the nodes
-                struct Process *temp = innerCurrent->data;
-                innerCurrent->data = nextInnerNode->data;
-                nextInnerNode->data = temp;
+    if(list->head==list->tail || list->head==NULL){
+        return;
+    }else{
+        Node *current1 = list->head;
+        Node *current2 = list->head->next;
+        Node *current3 = list->head;
+        while(current3!=list->tail){
+            while(current2!=NULL){
+                if(current2->data->remainingTime<current1->data->remainingTime){
+                    current1->data=current2->data;
+                }
+                current2=current2->next;
+                current1=current1->next;
             }
-            innerCurrent = innerCurrent->next;
+            current3=current3->next;
         }
-        current = nextNode;
     }
 }
 void RemH(LinkedList* list){//remove from head
@@ -132,7 +133,7 @@ void RemT(LinkedList* list){//remove from tail
 }
 void *shr;
 LinkedList Ready;
-
+Node* RunningProcess;
 int number_of_finish_process = 0; // number of finished process
 void handleChild(int signum)      // this is when a process send this to scheduler
 {
@@ -141,11 +142,13 @@ void handleChild(int signum)      // this is when a process send this to schedul
     // memcpy(&time, ( Time *)shr, sizeof(Time));
     printf("start at  %d and run %d\n", ((struct Time *)shr)->start_time,((struct Time *)shr)->runnunig_time);
     RrunningT=((struct Time *)shr)->runnunig_time;
-    //if process.runningtime = x then 
-    //calc. statistics ----> Ali
-    //add +1 number_of_finish_process --->mohamed
-    number_of_finish_process++;
-
+    if(RunningProcess->data->running_time==RrunningT){
+        //if process.runningtime = x then 
+        //calc. statistics ----> Ali
+        //add +1 number_of_finish_process --->mohamed
+        number_of_finish_process++;
+    }
+    RunningProcess->data->remainingTime=RunningProcess->data->running_time-RrunningT;
     signal(SIGUSR1, handleChild);
 }
 void ClearCock(int signum) // it process_generator interrupt;
@@ -203,8 +206,7 @@ int main(int argc, char *argv[])
                         shr = shmat(shm_id, NULL, 0);
                         i++;
                     }
-                    
-
+                    process.remainingTime=process.running_time;
                     //Nesma, can we stop the clock here then continuing it below the switch code? 
                     // algorithm of sorting based on scheduler algorithm
                     // here you can stop the running process before sorting in the ready queue
@@ -254,29 +256,21 @@ int main(int argc, char *argv[])
             case 1: // Round Robin
                 if(Ready.head->data->running_time == RrunningT){
                     // If the running time of the process at the head matches RrunningT, remove the node pointed by RRPointer
-                    Node *current = Ready.head;
-                    Node *prev = NULL;
-                    // Traverse the list until RRPointer is found
-                    while (current != RRPointer && current != NULL) {
-                        prev = current;
-                        current = current->next;
+                    Node* current=Ready.head;
+                    while(current->next!=RRPointer){
+                        current=current->next;
                     }
-                    // If RRPointer is found in the list, remove it
-                    if (current != NULL) {
-                        if (prev == NULL) {
-                            // If RRPointer is at the head of the list
-                            Ready.head = current->next;
-                            if (Ready.head == NULL) {
-                                Ready.tail = NULL;
-                            }
-                        } else {
-                            prev->next = current->next;
-                            if (prev->next == NULL) {
-                                Ready.tail = prev;
-                            }
-                        }
-                        free(current);
-                        }
+                    if(RRPointer==Ready.tail){
+                        Ready.tail=current;
+                        current->next=NULL;
+                        free(RRPointer);
+                        RRPointer=Ready.head;
+                    }else{
+                        current->next=RRPointer->next;
+                        RRPointer->next=NULL;
+                        free(RRPointer);
+                        RRPointer=current->next;
+                    }
                     }
                     else{
                     if(RrunningT>=slice){
@@ -289,12 +283,15 @@ int main(int argc, char *argv[])
                     kill(RRPointer->data->process_id,SIGCONT);
                     }
                 }
+                    RunningProcess=RRPointer;
                 break;
             case 2: // Shortest Remaining Time Next (SRTN)
                 kill(Ready.head->data->process_id,SIGCONT);
                 if(Ready.head->data->running_time == RrunningT){
                     RemH(&Ready);
+                    kill(Ready.head->data->process_id,SIGCONT);
                 }
+                RunningProcess=Ready.head;
                 break;
             case 3: // Highest Priority First (HPF)
                 //if processor is idle then run a process
@@ -303,6 +300,7 @@ int main(int argc, char *argv[])
                     RemH(&Ready);
                     kill(Ready.head->data->process_id,SIGCONT);
                 }
+                RunningProcess=Ready.head;
                 break;
             default:
                 printf("Invalid algorithm!\n");
