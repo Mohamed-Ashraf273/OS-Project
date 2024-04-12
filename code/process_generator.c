@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
   }
   if (clk_id == 0)
   {
-    execl("clk", "clk.out", NULL);
+    execl("clk", "clk", NULL);
   }
   else
   {
@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
     else if (scheduler_id == 0)
     {
 
-      execl("scheduler", "scheduler.out", msg, shm, algorithm, slic_num, num_processes, NULL);
+      execl("scheduler", "scheduler", msg, shm, algorithm, slic_num, num_processes, NULL);
     }
     else
     {

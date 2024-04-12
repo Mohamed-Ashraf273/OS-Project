@@ -37,6 +37,7 @@ void StopHandler(int signum)
 }
 int main(int agrc, char *argv[])
 {
+    printf("helloFromProcess\n");
     signal(SIGINT, ClearCock);
     signal(SIGUSR2, StopHandler);
     int shm_id = atoi(argv[1]);
@@ -46,7 +47,8 @@ int main(int agrc, char *argv[])
     // TODO it needs to get the remaining time from somewhere(sheduler)
     // remainingtime = ??;
     shr = shmat(shm_id, NULL, 0);
-     kill(getpid(), SIGUSR2); // to stop it initially when create
+    kill(getpid(), SIGUSR2); // to stop it initially when create
+
     if (shr == (void *)-1)
     {
         perror("shmat");
@@ -61,6 +63,7 @@ int main(int agrc, char *argv[])
     // time.runnunig_time = 0;
     while (remainingtime > 0)
     {
+        //printf("remainingTime: %d\n",remainingtime);
         int x = getClk();
 
         if (x != prev)
@@ -71,12 +74,14 @@ int main(int agrc, char *argv[])
             running++;
             // time.runnunig_time++;
             remainingtime--; // descrease its value
-            printf("at clock= %d remining  =%d running time %d\n", x, remainingtime, atoi(argv[2]));
+            printf("at clock= %d remaining  =%d running time %d\n", x, remainingtime, atoi(argv[2]));
             // remainingtime = ??;
         }
+        
     }
     /////if it normally finished
     destroyClk(false);
     memory();
+
     exit(0);
 }
