@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 {
   /// initialization and signals
   signal(SIGINT, clearResources);
-  int algrithm_number;
+  int algrithm_number=0;
   int slice = 0;
   int number_of_process = 0;//ali must set it by the number of readed processes
   char algorithm[2], slic_num[10], msg[10], shm[10], num_processes[30]; // i use this when convert integer to string
@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
     else
     {
       initClk();
-      int prev = getClk(); // initial time is equal to 0
+      int prev = 0; // initial time is equal to 0
       int x;
       int i = 0;                            // for dummy simulation
       int send, size; // size is the size of message number_processess is the number of process in the file
@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
         x = getClk(); // if he read the same time
         if (x != prev)
         {
-          printf("current time is %d\n", x);
+        //  printf("current time is %d\n", x);
           // 6. Send the information to the scheduler at the appropriate time.//done
 
           if (i != number_of_process && processes[i].arrive_time == x) // if there is a process arrive in this time send it to scheduler
