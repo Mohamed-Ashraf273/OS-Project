@@ -46,17 +46,17 @@ int main(int argc, char *argv[])
   processes[0].running_time = 6;
   processes[0].priority = 5;
   /////
-  processes[1].arrive_time = 3;
+  processes[1].arrive_time = 1;
   processes[1].process_id = 2;
   processes[1].running_time = 3;
   processes[1].priority = 2;
 
-  processes[2].arrive_time = 5;
+  processes[2].arrive_time = 1;
   processes[2].process_id = 3;
   processes[2].running_time = 3;
   processes[2].priority = 1;
 
-  processes[3].arrive_time = 7;
+  processes[3].arrive_time = 1;
   processes[3].process_id = 4;
   processes[3].running_time = 3;
   processes[3].priority = 3;
@@ -141,9 +141,9 @@ int main(int argc, char *argv[])
         //  printf("current time is %d\n", x);
           // 6. Send the information to the scheduler at the appropriate time.//done
 
-          if (i != number_of_process && processes[i].arrive_time == x) // if there is a process arrive in this time send it to scheduler
+          while (i != number_of_process && processes[i].arrive_time == x) // if there is a process arrive in this time send it to scheduler
           {
-            printf("processes[i]: %d\n",processes[i].priority);
+            printf("processes[%d]: %d\n",i,processes[i].priority);
             size = sizeof(processes[i]);
             send = msgsnd(msg_id, &(processes[i]), size, !IPC_NOWAIT);
             if (send == -1) // error when try to send so clear resources

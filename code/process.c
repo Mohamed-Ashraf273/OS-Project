@@ -36,7 +36,7 @@ void StopHandler(int signum)
 }
 int main(int agrc, char *argv[])
 {
-    printf("helloFromProcess\n");
+    //printf("helloFromProcess\n");
     signal(SIGINT, ClearCock);
     signal(SIGUSR2, StopHandler);
     int shm_id = atoi(argv[1]);

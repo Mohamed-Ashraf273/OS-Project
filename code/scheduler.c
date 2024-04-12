@@ -112,7 +112,8 @@ void AddSortedPriority(LinkedList* list, struct Process* data) {
     }
     else {
         Node* current = list->head;
-        while (current->next != NULL && data->priority > current->next->data->priority) {
+        if(list->head->data->arrive_time!=data->arrive_time){
+             while (current->next != NULL && data->priority > current->next->data->priority) {
             current = current->next;
         }
         if (current->next == NULL) { // Insert at the end
@@ -126,6 +127,34 @@ void AddSortedPriority(LinkedList* list, struct Process* data) {
             current->next = newNode;
             newNode->prev = current;
         }
+        }
+       else{
+        while (current != NULL && data->priority > current->data->priority) {
+            current = current->next;
+        }
+        if (current == NULL) { // Insert at the end
+            current=list->tail;
+            current->next = newNode;
+            newNode->prev = current;
+            list->tail = newNode; // Update tail
+        }
+        else { // Insert in the middle
+        if(current==list->head){
+            newNode->next = current;
+            current->prev=newNode;
+            newNode->prev=NULL;
+            list->head=newNode;
+
+        }else{
+            newNode->next = current;
+            newNode->prev=current->prev;
+            current->prev->next = newNode;
+            newNode->prev = newNode;
+
+        }
+            
+        }
+       }
     }
 }
 
@@ -261,7 +290,7 @@ int main(int argc, char *argv[])
 
            while( msgrcv(msg_id, &process[num], size, 0, IPC_NOWAIT)!=-1 && num!=number_of_system_process)                                                                    // recieve a process                                                                                                               // new process I think need to e scheduled                                                                                                          // receive a process
             {
-                //printf("prio: %d\n",process[num].priority);
+                //printf("prio: %d & clock: %d\n",process[num].priority,getClk());
                 //if(Ready.head!=NULL){printf("ReadHead2: %d\n",Ready.head->data->priority);}
                 sprintf(process_run_time, "%d", process[num].running_time);
                 int child_id = fork();
