@@ -28,7 +28,6 @@ void memory()
     ((struct Time *)shr)->runnunig_time = running;
 
     kill(getppid(), SIGUSR1); // to save information and notify scheduler
-    shmdt(shr);
 }
 void StopHandler(int signum)
 {
@@ -47,7 +46,7 @@ int main(int agrc, char *argv[])
     // TODO it needs to get the remaining time from somewhere(sheduler)
     // remainingtime = ??;
     shr = shmat(shm_id, NULL, 0);
-    kill(getpid(), SIGUSR2); // to stop it initially when create
+   kill(getpid(), SIGUSR2); // to stop it initially when create
 
     if (shr == (void *)-1)
     {
@@ -82,6 +81,7 @@ int main(int agrc, char *argv[])
     /////if it normally finished
     destroyClk(false);
     memory();
+    shmdt(shr);
 
     exit(0);
 }

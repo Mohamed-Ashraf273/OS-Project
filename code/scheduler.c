@@ -199,7 +199,7 @@ int main(int argc, char *argv[])
     sprintf(share_id, "%d", shm_id);
     initClk();
     int i = 0;
-    int prev = getClk();
+    int prev = 0;
     // to check for each second not apart of second
     while (number_of_finish_process < number_of_system_process) // untill finish
     {
@@ -209,9 +209,7 @@ int main(int argc, char *argv[])
             printf("   \n");// i don't know why but the code won't work without it
             struct Process process;
             int size = sizeof(process.arrive_time) + sizeof(process.priority) + sizeof(process.process_id) + sizeof(process.running_time); // size of recieved message
-            int rec = msgrcv(msg_id, &process, size, 0, IPC_NOWAIT);                                                                       // recieve a process
-             //stops here
-            if (rec != -1)                                                                                                                 // new process I think need to e scheduled                                                                                                          // receive a process
+           while( msgrcv(msg_id, &process, size, 0, IPC_NOWAIT)!=-1)                                                                    // recieve a process                                                                                                               // new process I think need to e scheduled                                                                                                          // receive a process
             {
                 sprintf(process_run_time, "%d", process.running_time);
                 int child_id = fork();
