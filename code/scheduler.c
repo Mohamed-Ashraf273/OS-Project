@@ -21,6 +21,7 @@ struct Process        // to store process information and send them to scheduler
     int state;        // state of the process (0:running &  1:stopped or blocked & 2:term)
     int child_id;     // when fork to use it when make signals
     int remainingTime;
+    int RRtime;
     // int process_memory;
 };
 int RrunningT;
@@ -63,6 +64,23 @@ void Add(LinkedList *list, struct Process  *data) {//add to head
         newNode->next = list->head;
         list->head = newNode;
         
+    }
+}
+void AddT(LinkedList *list, struct Process  *data){//add to tail
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    if (newNode == NULL) {
+        printf("Memory allocation failed.\n");
+        return;
+    }
+    newNode->data = data;
+    newNode->next = NULL;
+
+    if (list->head == NULL) { // List is empty
+        list->head = list->tail = newNode;
+    } else {
+        list->tail->next = newNode; // Link the current tail to the new node
+        newNode->prev = list->tail; // Update the previous pointer of the new node
+        list->tail = newNode; // Update the tail pointer to the new node
     }
 }
 // void AddSortedPriority(LinkedList *list, struct Process  *data){
@@ -309,12 +327,14 @@ int main(int argc, char *argv[])
         {
             printf("   \n");// i don't know why but the code won't work without it
             // struct Process process;
-
-            int size = sizeof(process[num].arrive_time) + sizeof(process[num].priority) + sizeof(process[num].process_id) + sizeof(process[num].running_time); // size of recieved message
+            int size=0;
+            if(num!=number_of_system_process){
+                size = sizeof(process[num].arrive_time) + sizeof(process[num].priority) + sizeof(process[num].process_id) + sizeof(process[num].running_time); // size of recieved message
+            }
            
           // if(RunningProcess!=NULL){printf("RunningP1: %d\n",RunningProcess->data->priority);}
 
-           while( msgrcv(msg_id, &process[num], size, 0, IPC_NOWAIT)!=-1 && num!=number_of_system_process)                                                                    // recieve a process                                                                                                               // new process I think need to e scheduled                                                                                                          // receive a process
+           while(num!=number_of_system_process && msgrcv(msg_id, &process[num], size, 0, IPC_NOWAIT)!=-1)                                                                    // recieve a process                                                                                                               // new process I think need to e scheduled                                                                                                          // receive a process
             {
                 //printf("prio: %d & clock: %d\n",process[num].priority,getClk());
                 //if(RunningProcess!=NULL){printf("RunningP2: %d\n",RunningProcess->data->priority);}
@@ -342,13 +362,18 @@ int main(int argc, char *argv[])
                     }
                     process[num].remainingTime=process[num].running_time;
                     process[num].state=1;
+                    process[num].RRtime=getClk();
                     //Nesma, can we stop the clock here then continuing it below the switch code? 
                     // algorithm of sorting based on scheduler algorithm
                     // here you can stop the running process before sorting in the ready queue
                     // beacuse I think it will take time Mohammed
                     switch (algorithm) {
                         case 1: // Round Robin
-                        
+                        AddT(&Ready,&process[num]);
+                        if(i==0 || Ready.head->next==NULL){//at first the RunningProcess points for the firstProcess
+                            RunningProcess=Ready.head;
+                        }
+                        num++;
                         break;
                         case 2: // Shortest Remaining Time Next (SRTN) Sorted
                         if(RunningProcess!=NULL){
@@ -399,37 +424,42 @@ int main(int argc, char *argv[])
             */
             switch (algorithm) {
             case 1: // Round Robin
-                //if(Ready.head->data->running_time == RrunningT){
-                    // If the running time of the process at the head matches RrunningT, remove the node pointed by RRPointer
-                    //Node* current=Ready.head;
-                    //while(current->next!=RRPointer){
-                        //current=current->next;
-                    //}
-                    //if(RRPointer==Ready.tail){
-                        //Ready.tail=current;
-                        //current->next=NULL;
-                        //free(RRPointer);
-                        //RRPointer=Ready.head;
-                    //}else{
-                        //current->next=RRPointer->next;
-                        //RRPointer->next=NULL;
-                        //free(RRPointer);
-                       // RRPointer=current->next;
-                    //}
-                    //}
-                    //else{
-                    //if(RrunningT>=slice){
-                    //time it runs greater than or equal slice stop it
-                    //kill(RRPointer->data->process_id,SIGUSR2);
-                    //RRPointer=RRPointer->next->next;
-                    //if(RRPointer==NULL){
-                        //RRPointer=Ready.head;
-                    //}
-                    //kill(RRPointer->data->process_id,SIGCONT);
-                    //}
-                //}
-                    //RunningProcess=RRPointer;
-                break;
+            if (Ready.head != NULL) {
+                if (!processorState) { // Idle, select the first process in the ready queue
+                    RunningProcess = Ready.head;
+                    processorState = 1; // Busy
+                    kill(RunningProcess->data->child_id, SIGCONT);
+                    RunningProcess->data->state = 0; // Running
+                } else {
+                    // Check if the current process has consumed its time slice
+                    if (RunningProcess->data->RRtime - getClk() == slice) {
+                        kill(RunningProcess->data->child_id, SIGUSR2); // Stop the current process
+                        RunningProcess = RunningProcess->next; // Move to the next process
+
+                        // If reached the end of the ready queue, wrap around to the head
+                        if (RunningProcess == NULL && Ready.head != NULL) {
+                            RunningProcess = Ready.head;
+                        }
+
+                        // If there's a process to run, continue its execution
+                        if (RunningProcess != NULL && RunningProcess->data->remainingTime != 0) {
+                            RunningProcess->data->state = 1; // Blocked
+                            processorState = 0; // Idle
+                            kill(RunningProcess->data->child_id, SIGCONT);
+                            RunningProcess->data->state = 0; // Running
+                            processorState = 1; // Busy
+                        } else {
+                            RunningProcess->data->state = 1; // Blocked
+                            processorState = 0; // Idle
+                        }
+                    }
+                }
+            } else {
+                processorState = 0; // Idle
+            }
+            break;
+
+
             case 2: // Shortest Remaining Time Next (SRTN)
                 //kill(Ready.head->data->process_id,SIGCONT);
                 //if(Ready.head->data->running_time == RrunningT){
