@@ -46,17 +46,17 @@ int main(int argc, char *argv[])
   processes[0].running_time = 6;
   processes[0].priority = 5;
   /////
-  processes[1].arrive_time = 1;
+  processes[1].arrive_time = 3;
   processes[1].process_id = 2;
   processes[1].running_time = 3;
   processes[1].priority = 2;
 
-  processes[2].arrive_time = 1;
+  processes[2].arrive_time = 7;
   processes[2].process_id = 3;
-  processes[2].running_time = 3;
+  processes[2].running_time = 4;
   processes[2].priority = 1;
 
-  processes[3].arrive_time = 1;
+  processes[3].arrive_time = 10;
   processes[3].process_id = 4;
   processes[3].running_time = 3;
   processes[3].priority = 3;
@@ -65,7 +65,6 @@ int main(int argc, char *argv[])
   // 2. Ask the user for the chosen scheduling algorithm and its parameters, if there are any.  //done
   while (!(algrithm_number == 1 || algrithm_number == 2 || algrithm_number == 3))
   {
-
     printf("Please Enter which algorithm do you want   \n");
     printf("1 is for RR \n");
     printf("2 is for SRTN \n");

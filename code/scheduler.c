@@ -157,29 +157,33 @@ void AddSortedPriority(LinkedList* list, struct Process* data) {
        }
     }
 }
-
-
-
-
-void SortAccordingRT(LinkedList *list){
-    if(list->head==list->tail || list->head==NULL){
-        return;
-    }else{
-        Node *current1 = list->head;
-        Node *current2 = list->head->next;
-        Node *current3 = list->head;
-        while(current3!=list->tail){
-            while(current2!=NULL){
-                if(current2->data->remainingTime<current1->data->remainingTime){
-                    current1->data=current2->data;
-                }
-                current2=current2->next;
-                current1=current1->next;
+void SortAccordingRT(LinkedList* list) {
+    if (list->head == NULL || list->head == list->tail) {
+        return; // Nothing to sort
+    }
+    
+    Node* current1 = list->head;
+    while (current1 != NULL) {
+        Node* current2 = current1->next;
+        Node* minNode = current1; // Assume current node has minimum remaining time
+        
+        // Find the node with minimum remaining time starting from current2
+        while (current2 != NULL) {
+            if (current2->data->remainingTime < minNode->data->remainingTime) {
+                minNode = current2;
             }
-            current3=current3->next;
+            current2 = current2->next;
         }
+        
+        // Swap data between current1 and minNode
+        struct Process* temp = current1->data;
+        current1->data = minNode->data;
+        minNode->data = temp;
+        
+        current1 = current1->next; // Move to next node
     }
 }
+
 void RemH(LinkedList* list){//remove from head
     if(list->head!=NULL){
         Node* current=list->head;
@@ -208,7 +212,7 @@ void printList(LinkedList* list){
     if(list->head!=NULL){
         Node* current=list->head;
         while(current!=NULL){
-            printf("%d, ",current->data->priority);
+            printf("%d, ",current->data->remainingTime);
             current=current->next;
         }
     }
@@ -216,9 +220,10 @@ void printList(LinkedList* list){
 void *shr;
 LinkedList Ready;
 int cont=1;
-
 Node* RunningProcess=NULL;
 int number_of_finish_process = 0; // number of finished process
+int processorState=0;//0:idle & 1:working on process
+
 void handleChild(int signum)      // this is when a process send this to scheduler
 {
     //RunningProcess->data->state=1;//stopped;
@@ -253,9 +258,30 @@ void ClearCock(int signum) // it process_generator interrupt;
 
     exit(0); // exit
 }
+void ALGO(LinkedList* list){
+     if(!processorState){// if idle
+        RunningProcess=list->head;
+        RunningProcess->data->state=0;//running
+        processorState=1;//busy
+        kill(RunningProcess->data->child_id,SIGCONT);
+    }else{
+        if(RunningProcess->data->state==2){//terminated
+        //printList(&Ready);
+        RemH(list);
+        //printList(&Ready);
+        RunningProcess=list->head;
+        if(RunningProcess!=NULL){
+        RunningProcess->data->state=1;//blocked
+        processorState=0;//idle
+        kill(RunningProcess->data->child_id,SIGCONT);
+        RunningProcess->data->state=0;//running
+        processorState=1;//busy
+        }
+        }
+     }
+}
 int main(int argc, char *argv[])
 {
-    int processorState=0;//0:idle & 1:working on process
     initializeList(&Ready);
     //printf("hello from scheduler\n");
     Node *RRPointer=Ready.head;// pointer points to the first process for RR Algo
@@ -286,12 +312,12 @@ int main(int argc, char *argv[])
 
             int size = sizeof(process[num].arrive_time) + sizeof(process[num].priority) + sizeof(process[num].process_id) + sizeof(process[num].running_time); // size of recieved message
            
-           //if(Ready.head!=NULL){printf("ReadHead1: %d\n",Ready.head->data->priority);}
+          // if(RunningProcess!=NULL){printf("RunningP1: %d\n",RunningProcess->data->priority);}
 
            while( msgrcv(msg_id, &process[num], size, 0, IPC_NOWAIT)!=-1 && num!=number_of_system_process)                                                                    // recieve a process                                                                                                               // new process I think need to e scheduled                                                                                                          // receive a process
             {
                 //printf("prio: %d & clock: %d\n",process[num].priority,getClk());
-                //if(Ready.head!=NULL){printf("ReadHead2: %d\n",Ready.head->data->priority);}
+                //if(RunningProcess!=NULL){printf("RunningP2: %d\n",RunningProcess->data->priority);}
                 sprintf(process_run_time, "%d", process[num].running_time);
                 int child_id = fork();
                 //stop
@@ -325,15 +351,23 @@ int main(int argc, char *argv[])
                         
                         break;
                         case 2: // Shortest Remaining Time Next (SRTN) Sorted
-                        
+                        if(RunningProcess!=NULL){
+                            if(RunningProcess->data->remainingTime!=0){
+                                kill(RunningProcess->data->child_id,SIGUSR2);
+                            }
+                            else{
+                                RemH(&Ready);
+                            }
+                            processorState=0;
+                        }
+                        Add(&Ready,&process[num]);
+                        num++;
                         break;
                         case 3: // Highest Priority First (HPF) Sorted
                         //printf("hello from HPF\n");
-                        
-
                         AddSortedPriority(&Ready,&process[num]);
                         num++;
-                        printList(&Ready);
+                        //printList(&Ready);
                         //if(!processorState){//if its idle enter
                             //processorState=1;//busy
                             //RunningProcess=Ready.head;
@@ -403,32 +437,19 @@ int main(int argc, char *argv[])
                     //kill(Ready.head->data->process_id,SIGCONT);
                 //}
                 //RunningProcess=Ready.head;
+                if(Ready.head!=NULL){
+                    //printf("State: %d\n",RunningProcess->data->state);
+                    SortAccordingRT(&Ready);
+                    ALGO(&Ready);
+                }else{
+                    processorState=0;//idle
+                }
                 break;
             case 3: // Highest Priority First (HPF)
                 //printf("hello from case3\n");
                 if(Ready.head!=NULL){
                     //printf("State: %d\n",RunningProcess->data->state);
-                    if(!processorState){// if idle
-                       RunningProcess=Ready.head;
-                       RunningProcess->data->state=0;//running
-                       processorState=1;//busy
-                       kill(RunningProcess->data->child_id,SIGCONT);
-                    }else{
-                        printf("RunningProcessPrio: %d\n",RunningProcess->data->priority);
-                        if(RunningProcess->data->state==2){//terminated
-                            //printList(&Ready);
-                            RemH(&Ready);
-                            //printList(&Ready);
-                            RunningProcess=Ready.head;
-                            if(RunningProcess!=NULL){
-                                RunningProcess->data->state=1;//blocked
-                                processorState=0;//idle
-                                kill(RunningProcess->data->child_id,SIGCONT);
-                                RunningProcess->data->state=0;//running
-                                processorState=1;//busy
-                            }
-                        }
-                    }
+                    ALGO(&Ready);
                 }else{
                     processorState=0;//idle
                 }
