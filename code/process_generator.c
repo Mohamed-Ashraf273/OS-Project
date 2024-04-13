@@ -51,12 +51,12 @@ int main(int argc, char *argv[])
   processes[1].running_time = 3;
   processes[1].priority = 2;
 
-  processes[2].arrive_time = 7;
+  processes[2].arrive_time = 15;
   processes[2].process_id = 3;
   processes[2].running_time = 4;
   processes[2].priority = 1;
 
-  processes[3].arrive_time = 10;
+  processes[3].arrive_time = 20;
   processes[3].process_id = 4;
   processes[3].running_time = 3;
   processes[3].priority = 3;
@@ -165,6 +165,7 @@ int main(int argc, char *argv[])
 // clear resources
 void clearResources(int signum) // 7. Clear clock resources //done
 {
+  printf("process generator\n");
   msgctl(msg_id, IPC_RMID, (struct msqid_ds *)0); // clear msg
   shmctl(shm_id, IPC_RMID, (struct shmid_ds *)0); // clear shared memory
   // send signal to all this is if I kill it from terminal do must kill all other processes
