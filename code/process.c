@@ -46,6 +46,7 @@ int main(int agrc, char *argv[])
     // TODO it needs to get the remaining time from somewhere(sheduler)
     // remainingtime = ??;
     shr = shmat(shm_id, NULL, 0);
+   // kill(getppid(),SIGCONT);
    kill(getpid(), SIGUSR2); // to stop it initially when create
 
     if (shr == (void *)-1)
