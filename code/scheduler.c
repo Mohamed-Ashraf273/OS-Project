@@ -24,6 +24,7 @@ struct Process        // to store process information and send them to scheduler
     // int process_memory;
 };
 int RrunningT;
+int algo;
 struct Time
 {
     int runnunig_time;
@@ -350,7 +351,10 @@ void handleChild(int signum) // this is when a process send this to scheduler
             // printf("RrunningT: %d",RrunningT);
             RunningProcess->data->state = 2; // term;
             RunningProcess->data->remainingTime = 0;
-            ALGO(&Ready);
+            //if(algo==2){
+                //SortAccordingRT(&Ready);
+            //}
+            //ALGO(&Ready);
             // printf("nu m%d\n",number_of_finish_process);
         }
         else
@@ -379,6 +383,7 @@ int main(int argc, char *argv[])
     int msg_id = atoi(argv[1]);    // ID OF MESSAGE QUEUE
     int shm_id = atoi(argv[2]);    // ID OF Shared memory
     int algorithm = atoi(argv[3]); // 1 RR 2 SRTN 3 HPF //Mohammed use this
+    algo=algorithm;
     int slice = atoi(argv[4]);
     int number_of_system_process = atoi(argv[5]); // all system processes
     char process_run_time[10];                    // to send it to each process
@@ -386,15 +391,15 @@ int main(int argc, char *argv[])
     sprintf(share_id, "%d", shm_id);
     initClk();
     int i = 0;
-    int prev = 0;
+    int prev = -1;
     // to check for each second not apart of second
     int num = 0;
     struct Process *process = (struct Process *)malloc(number_of_system_process * sizeof(struct Process));
     while (number_of_finish_process < number_of_system_process) // untill finish
     {
         int x = getClk();
-        if (prev != x)
-        {
+        //if (prev != x)
+        //{
             // printf("   \n");// i don't know why but the code won't work without it
             // struct Process process;
             int size = 16;
@@ -406,6 +411,7 @@ int main(int argc, char *argv[])
 
             while (num != number_of_system_process && msgrcv(msg_id, &process[num], size, 0, IPC_NOWAIT) != -1) // recieve a process                                                                                                               // new process I think need to e scheduled                                                                                                          // receive a process
             {
+                //printf("clock1: %d\n",getClk());
                 // printf("prio: %d & clock: %d\n",process[num].priority,getClk());
                 // if(RunningProcess!=NULL){printf("RunningP2: %d\n",RunningProcess->data->priority);}
                 sprintf(process_run_time, "%d", process[num].running_time);
@@ -460,6 +466,7 @@ int main(int argc, char *argv[])
                             }
                             processorState = 0;
                         }
+                        //printf("clock2: %d\n",getClk());
                         Add(&Ready, &process[num]);
                         num++;
                         break;
@@ -467,7 +474,7 @@ int main(int argc, char *argv[])
                         // printf("hello from HPF\n");
                         AddSortedPriority(&Ready, &process[num]);
                         num++;
-                        printList(&Ready);
+                        //printList(&Ready);
                         // if(!processorState){//if its idle enter
                         // processorState=1;//busy
                         // RunningProcess=Ready.head;
@@ -482,12 +489,14 @@ int main(int argc, char *argv[])
                         break;
                     }
                     // wait(NULL);
-                    while (cont)
-                    {
-                    }
+                    //printf("clock1: %d\n",getClk());
+                    while (cont){}
+                    //printf("clock1: %d\n",getClk());
                     cont = 1;
                 }
             }
+            //printf("clock2: %d\n",getClk());
+
             // here choose which one should be running based on algorithm
             /*if STRN and HPF will take the first process in queue
             //if round robin based on time slice
@@ -559,6 +568,7 @@ int main(int argc, char *argv[])
                 if (Ready.head != NULL)
                 {
                     // printf("State: %d\n",RunningProcess->data->state);
+                    //printf("clock3: %d\n",getClk());
                     SortAccordingRT(&Ready);
                     ALGO(&Ready);
                 }
@@ -599,7 +609,7 @@ int main(int argc, char *argv[])
             /*ali
              * print output file must be here also
              */
-        }
+        //}
     }
     // TODO implement the scheduler :)
     // on termination release the clock resources.

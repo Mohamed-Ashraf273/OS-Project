@@ -46,17 +46,17 @@ int main(int argc, char *argv[])
   processes[0].running_time = 6;
   processes[0].priority = 5;
   /////
-  processes[1].arrive_time = 3;
+  processes[1].arrive_time = 1;
   processes[1].process_id = 2;
   processes[1].running_time = 3;
   processes[1].priority = 2;
 
-  processes[2].arrive_time = 15;
+  processes[2].arrive_time = 1;
   processes[2].process_id = 3;
   processes[2].running_time = 4;
   processes[2].priority = 1;
 
-  processes[3].arrive_time = 20;
+  processes[3].arrive_time = 1;
   processes[3].process_id = 4;
   processes[3].running_time = 3;
   processes[3].priority = 3;
@@ -144,6 +144,7 @@ int main(int argc, char *argv[])
           {
             printf("processes[%d]: %d\n",i,processes[i].priority);
             size = sizeof(processes[i]);
+            //printf("SendingTime: %d\n",getClk());
             send = msgsnd(msg_id, &(processes[i]), size, !IPC_NOWAIT);
             if (send == -1) // error when try to send so clear resources
             {
