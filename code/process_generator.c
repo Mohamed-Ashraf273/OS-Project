@@ -37,10 +37,29 @@ int main(int argc, char *argv[])
    * then put it in queue or dara structure to send it to scdeduler
    * number_of_process = ?? number of readed processess do this
    */
+  FILE* inputfile;
+  char buffer[100];
+  inputfile = fopen("processes.txt","r");
+  if(inputfile == NULL){
+    printf("Failed to open the input file.\n");
+    exit(1);
+  }
+  // count number of lines
+  while(fgets(buffer,sizeof(buffer),inputfile)!=NULL){
+    number_of_process++;
+  }
+  // return to the first line
+  fseek(inputfile,0,SEEK_SET);
+  // read file and store it in processes
+  struct Process processes[number_of_process];
+  for(int i=0;i<number_of_process;i++){
+    fscanf(inputfile,"%d\t%d\t%d\t%d",&processes[i].process_id,&processes[i].arrive_time,&processes[i].running_time,&processes[i].priority);
+  }
+  fclose(inputfile);
   ////////dummy untill fill it
   //here must update number_of_process
-  number_of_process=4;//dummy
-  struct Process processes[4];
+  //number_of_process=4;//dummy
+  /*struct Process processes[4];
   processes[0].arrive_time = 1;
   processes[0].process_id = 1;
   processes[0].running_time = 6;
@@ -60,7 +79,7 @@ int main(int argc, char *argv[])
   processes[3].process_id = 4;
   processes[3].running_time = 3;
   processes[3].priority = 3;
-
+  */
   ///////////////////////Read from user////////////////////////////////
   // 2. Ask the user for the chosen scheduling algorithm and its parameters, if there are any.  //done
   while (!(algrithm_number == 1 || algrithm_number == 2 || algrithm_number == 3))
