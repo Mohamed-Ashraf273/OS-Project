@@ -48,14 +48,19 @@ int main(int argc, char *argv[])
   while(fgets(buffer,sizeof(buffer),inputfile)!=NULL){
     number_of_process++;
   }
-  // return to the first line
+  // return to the second line
   fseek(inputfile,0,SEEK_SET);
+  fgets(buffer,sizeof(buffer),inputfile);
+  number_of_process--;
   // read file and store it in processes
   struct Process processes[number_of_process];
   for(int i=0;i<number_of_process;i++){
     fscanf(inputfile,"%d\t%d\t%d\t%d",&processes[i].process_id,&processes[i].arrive_time,&processes[i].running_time,&processes[i].priority);
   }
   fclose(inputfile);
+  for(int i=0;i<number_of_process;i++){
+    printf("%d\t%d\t%d\t%d\n",processes[i].process_id,processes[i].arrive_time,processes[i].running_time,processes[i].priority);
+  }
   ////////dummy untill fill it
   //here must update number_of_process
   //number_of_process=4;//dummy
