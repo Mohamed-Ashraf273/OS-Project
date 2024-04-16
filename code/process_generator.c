@@ -56,11 +56,30 @@ int main(int argc, char *argv[])
   struct Process processes[number_of_process];
   for(int i=0;i<number_of_process;i++){
     fscanf(inputfile,"%d\t%d\t%d\t%d",&processes[i].process_id,&processes[i].arrive_time,&processes[i].running_time,&processes[i].priority);
+    // if(processes[i].running_time==0){
+    //   number_of_process--;
+    //   i--;
+    // }
   }
   fclose(inputfile);
+  // for(int i=0;i<number_of_process;i++){
+  //   processes[i].process_id=i+1;
+  // }
   for(int i=0;i<number_of_process;i++){
     printf("%d\t%d\t%d\t%d\n",processes[i].process_id,processes[i].arrive_time,processes[i].running_time,processes[i].priority);
   }
+  // for(int i=0;i<4;i++){
+  //   printf("process[%d]arr: %d\n",i,processes[i].arrive_time);
+  // }
+  // for(int i=0;i<4;i++){
+  //   printf("process[%d]Prio: %d\n",i,processes[i].priority);
+  // }
+  // for(int i=0;i<4;i++){
+  //   printf("process[%d]id: %d\n",i,processes[i].process_id);
+  // }
+  // for(int i=0;i<4;i++){
+  //   printf("process[%d]runT: %d\n",i,processes[i].running_time);
+  // }
   ////////dummy untill fill it
   //here must update number_of_process
   //number_of_process=4;//dummy

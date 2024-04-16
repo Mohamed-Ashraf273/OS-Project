@@ -375,7 +375,7 @@ void ClearCock(int signum) // it process_generator interrupt;
 int main(int argc, char *argv[])
 {
     initializeList(&Ready);
-    // printf("hello from scheduler\n");
+    //printf("hello from scheduler\n");
     Node *RRPointer = Ready.head; // pointer points to the first process for RR Algo
     signal(SIGUSR1, handleChild); // if child terminate process
     signal(SIGINT, ClearCock);
@@ -397,6 +397,8 @@ int main(int argc, char *argv[])
     struct Process *process = (struct Process *)malloc(number_of_system_process * sizeof(struct Process));
     while (number_of_finish_process < number_of_system_process) // untill finish
     {
+        
+
         int x = getClk();
         //if (prev != x)
         //{
@@ -423,13 +425,13 @@ int main(int argc, char *argv[])
                 }
                 else if (child_id == 0) // child code
                 {
-                    // printf("childEntered\n");
+                    //printf("childEntered\n");
                     execl("process", "process", share_id, process_run_time, NULL);
                 }
                 else // scheduler
                 {
                     process[num].child_id = child_id; // set process id
-                    // printf("schedulerEntered\n");
+                    //printf("schedulerEntered\n");
                     // printf("process prio: %d\n",process[num].priority);
                     if (i == 0) // for first time only
                     {
@@ -508,6 +510,7 @@ int main(int argc, char *argv[])
             /*
             when want to run a process send it con signal
             */
+           
             switch (algorithm)
             {
             case 1: // Round Robin
@@ -565,10 +568,13 @@ int main(int argc, char *argv[])
                 //}
                 // RunningProcess=Ready.head;
               //  printList(&Ready)
+              
                 if (Ready.head != NULL)
                 {
                     // printf("State: %d\n",RunningProcess->data->state);
                     //printf("clock3: %d\n",getClk());
+        //             printf("number_of_system_process: %d\n",number_of_system_process);
+        //    printf("number_of_finish_process: %d\n",number_of_finish_process);
                     SortAccordingRT(&Ready);
                     ALGO(&Ready);
                 }
