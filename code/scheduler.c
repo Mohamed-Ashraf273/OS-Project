@@ -8,7 +8,7 @@
 #include <signal.h>
 #include <sys/msg.h>
 #include <sys/shm.h>
-
+#include<math.h>
 struct Process        // to store process information and send them to scheduler
 {                     // long mtype;//FOR MESSAGE
     int process_id;   // process id
@@ -280,6 +280,8 @@ void printList(LinkedList *list)
     }
 }
 void *shr;
+FILE* scheduler_log;
+FILE* scheduler_perf;
 LinkedList Ready;
 int cont = 1;
 Node *RunningProcess = NULL;
@@ -346,6 +348,11 @@ void handleChild(int signum) // this is when a process send this to scheduler
             printf("Finished\n");
             // if process.runningtime = x then
             // calc. statistics ----> Ali
+            int TA = getClk()-(RunningProcess->data->arrive_time);
+            int wait = TA - (RunningProcess->data->running_time);
+            float WTA = (TA*1.0) / (RunningProcess->data->running_time);
+            WTA=roundf(WTA*100)/100; 
+            fprintf(scheduler_log,"At time %d process %d finished arr %d total %d remain 0 wait %d TA %d WTA %.2f \n",getClk(),RunningProcess->data->process_id,RunningProcess->data->arrive_time,RunningProcess->data->running_time,wait,TA,WTA);
             // add +1 number_of_finish_process --->mohamed
             number_of_finish_process++;
             // printf("RrunningT: %d",RrunningT);
@@ -392,6 +399,8 @@ int main(int argc, char *argv[])
     initClk();
     int i = 0;
     int prev = -1;
+    scheduler_log=fopen("scheduler.log","a");
+    scheduler_perf=fopen("scheduler.perf","a");
     // to check for each second not apart of second
     int num = 0;
     struct Process *process = (struct Process *)malloc(number_of_system_process * sizeof(struct Process));
@@ -526,6 +535,10 @@ int main(int argc, char *argv[])
                         if (RunningProcess->data->RRtime - getClk() == slice)
                         {
                             kill(RunningProcess->data->child_id, SIGUSR2); // Stop the current process
+                            //calc for stopped process
+                            int wait=getClk()-(RunningProcess->data->arrive_time)-((RunningProcess->data->running_time)-(RunningProcess->data->remainingTime)); 
+                            fprintf(scheduler_log,"At time %d process %d stoped arr %d total %d remain %d wait %d\n",getClk(),RunningProcess->data->process_id,RunningProcess->data->arrive_time,RunningProcess->data->running_time,RunningProcess->data->remainingTime,wait); 
+                            //
                             RunningProcess = RunningProcess->next;         // Move to the next process
 
                             // If reached the end of the ready queue, wrap around to the head
@@ -609,6 +622,11 @@ int main(int argc, char *argv[])
             /*ali
              * print output file must be here also
              */
+            int wait=getClk()-(RunningProcess->data->arrive_time)-((RunningProcess->data->running_time)-(RunningProcess->data->remainingTime));
+            if(getClk()==RunningProcess->data->arrive_time) 
+                fprintf(scheduler_log,"At time %d process %d started arr %d total %d remain %d wait %d\n",getClk(),RunningProcess->data->process_id,RunningProcess->data->arrive_time,RunningProcess->data->running_time,RunningProcess->data->remainingTime,wait); 
+            else
+                fprintf(scheduler_log,"At time %d process %d resumed arr %d total %d remain %d wait %d\n",getClk(),RunningProcess->data->process_id,RunningProcess->data->arrive_time,RunningProcess->data->running_time,RunningProcess->data->remainingTime,wait); 
         //}
     }
     // TODO implement the scheduler :)
@@ -618,7 +636,8 @@ int main(int argc, char *argv[])
     */
     //  printf("scheduler\n");
     shmdt(shr);
-
+    fclose(scheduler_log);
+    fclose(scheduler_perf);
     destroyClk(false);
     kill(getppid(), SIGINT); // IF scheduler terminate mean all process he fork also terminate so must terminate process_generator
     exit(0);
