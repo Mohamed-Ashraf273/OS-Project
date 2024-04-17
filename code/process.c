@@ -72,6 +72,8 @@ int main(int agrc, char *argv[])
             prev = x;
             x = getClk();
             running++;
+                   // printf("clock%d\n",x);
+
             // time.runnunig_time++;
             remainingtime--; // descrease its value
             printf("at clock= %d remaining  =%d running time %d\n", x, remainingtime, atoi(argv[2]));

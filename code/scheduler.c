@@ -293,7 +293,7 @@ struct statisticsP {
     int TA;
 };
 struct statisticsP * result; // I will need
-int index = 0;//global refer to the index of next process to be added to result
+//int index = 0;//global refer to the index of next process to be added to result
 void ALGO(LinkedList *list)
 {
     // printf("hello\n");
@@ -456,6 +456,8 @@ int main(int argc, char *argv[])
                 //printf("clock1: %d\n",getClk());
                 // printf("prio: %d & clock: %d\n",process[num].priority,getClk());
                 // if(RunningProcess!=NULL){printf("RunningP2: %d\n",RunningProcess->data->priority);}
+               ///
+               
                 sprintf(process_run_time, "%d", process[num].running_time);
                 busytime+=process[num].running_time;
                 int child_id = fork();
@@ -566,6 +568,7 @@ int main(int argc, char *argv[])
                     }
                     else
                     {
+                        if(RunningProcess!=NULL)
                         // Check if the current process has consumed its time slice
                         if (RunningProcess->data->RRtime - getClk() == slice)
                         {
@@ -600,7 +603,7 @@ int main(int argc, char *argv[])
                                         fprintf(scheduler_log,"At time %d process %d resumed arr %d total %d remain %d wait %d\n",getClk(),RunningProcess->data->process_id,RunningProcess->data->arrive_time,RunningProcess->data->running_time,RunningProcess->data->remainingTime,wait);
                                 }
                             }
-                            else
+                            else if(RunningProcess != NULL)
                             {
                                 RunningProcess->data->state = 1; // Blocked
                                 processorState = 0;              // Idle
@@ -679,7 +682,7 @@ int main(int argc, char *argv[])
     */
     float CPUuti = 1.0*busytime/getClk();
     CPUuti=roundf(CPUuti*10000)/100;
-    fprintf(scheduler_perf,"CPU utilization = %.2f\n");
+    fprintf(scheduler_perf,"CPU utilization = %.2f\n",CPUuti);
     
     //  printf("scheduler\n");
     shmdt(shr);
