@@ -326,7 +326,9 @@ void ALGO(LinkedList *list)
                 // printList(&Ready);
 
                 RemH(list);
-
+                if(algo==2){
+                    SortAccordingRT(&Ready);
+                }
                 // printList(&Ready);
                 RunningProcess = list->head;
                 if (RunningProcess != NULL)
@@ -366,6 +368,9 @@ void handleChild(int signum) // this is when a process send this to scheduler
 
     if (RunningProcess != NULL)
     {
+        if(algo==2){
+            SortAccordingRT(&Ready);
+        }
         if (RunningProcess->data->running_time == RrunningT)
         {
 
