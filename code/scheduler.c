@@ -20,7 +20,8 @@ struct Process        // to store process information and send them to scheduler
     int state;        // state of the process (0:running &  1:stopped or blocked & 2:term)
     int child_id;     // when fork to use it when make signals
     int remainingTime;
-    int RRtime;
+    int RRtime; // store the time at when process start or resumed for RR
+    bool firsttime;
     // int process_memory;
 };
 int RrunningT;
@@ -287,7 +288,12 @@ int cont = 1;
 Node *RunningProcess = NULL;
 int number_of_finish_process = 0; // number of finished process
 int processorState = 0;           // 0:idle & 1:working on process
-
+struct statisticsP {
+    int RunningTime;
+    int TA;
+};
+struct statisticsP * result; // I will need
+int index = 0;//global refer to the index of next process to be added to result
 void ALGO(LinkedList *list)
 {
     // printf("hello\n");
@@ -301,6 +307,15 @@ void ALGO(LinkedList *list)
         RunningProcess->data->state = 0; // running
         processorState = 1;              // busy
         kill(RunningProcess->data->child_id, SIGCONT);
+        //calc for start or resumed process
+        if(RunningProcess!=NULL){
+            int wait=getClk()-(RunningProcess->data->arrive_time)-((RunningProcess->data->running_time)-(RunningProcess->data->remainingTime));
+            if(RunningProcess->data->firsttime){
+                fprintf(scheduler_log,"At time %d process %d started arr %d total %d remain %d wait %d\n",getClk(),RunningProcess->data->process_id,RunningProcess->data->arrive_time,RunningProcess->data->running_time,RunningProcess->data->remainingTime,wait);
+                RunningProcess->data->firsttime=false; 
+            }else
+                fprintf(scheduler_log,"At time %d process %d resumed arr %d total %d remain %d wait %d\n",getClk(),RunningProcess->data->process_id,RunningProcess->data->arrive_time,RunningProcess->data->running_time,RunningProcess->data->remainingTime,wait);
+        }
     }
     else
     {
@@ -321,6 +336,15 @@ void ALGO(LinkedList *list)
                     kill(RunningProcess->data->child_id, SIGCONT);
                     RunningProcess->data->state = 0; // running
                     processorState = 1;              // busy
+                    //calc for start or resumed process
+                    if(RunningProcess!=NULL){
+                        int wait=getClk()-(RunningProcess->data->arrive_time)-((RunningProcess->data->running_time)-(RunningProcess->data->remainingTime));
+                        if(RunningProcess->data->firsttime){
+                            fprintf(scheduler_log,"At time %d process %d started arr %d total %d remain %d wait %d\n",getClk(),RunningProcess->data->process_id,RunningProcess->data->arrive_time,RunningProcess->data->running_time,RunningProcess->data->remainingTime,wait);
+                            RunningProcess->data->firsttime=false; 
+                        }else
+                            fprintf(scheduler_log,"At time %d process %d resumed arr %d total %d remain %d wait %d\n",getClk(),RunningProcess->data->process_id,RunningProcess->data->arrive_time,RunningProcess->data->running_time,RunningProcess->data->remainingTime,wait);
+                    }
                 }
             }
         }
@@ -399,10 +423,12 @@ int main(int argc, char *argv[])
     initClk();
     int i = 0;
     int prev = -1;
-    scheduler_log=fopen("scheduler.log","a");
-    scheduler_perf=fopen("scheduler.perf","a");
+    scheduler_log=fopen("scheduler.log","w");
+    fprintf(scheduler_log,"#At time x process y state arr w total z remain y wait k\n");
+    scheduler_perf=fopen("scheduler.perf","w");
     // to check for each second not apart of second
     int num = 0;
+    int busytime;
     struct Process *process = (struct Process *)malloc(number_of_system_process * sizeof(struct Process));
     while (number_of_finish_process < number_of_system_process) // untill finish
     {
@@ -426,6 +452,7 @@ int main(int argc, char *argv[])
                 // printf("prio: %d & clock: %d\n",process[num].priority,getClk());
                 // if(RunningProcess!=NULL){printf("RunningP2: %d\n",RunningProcess->data->priority);}
                 sprintf(process_run_time, "%d", process[num].running_time);
+                busytime+=process[num].running_time;
                 int child_id = fork();
                 // stop
                 if (child_id == -1)
@@ -449,7 +476,6 @@ int main(int argc, char *argv[])
                     }
                     process[num].remainingTime = process[num].running_time;
                     process[num].state = 1;
-                    process[num].RRtime = getClk();
                     // Nesma, can we stop the clock here then continuing it below the switch code?
                     //  algorithm of sorting based on scheduler algorithm
                     //  here you can stop the running process before sorting in the ready queue
@@ -531,6 +557,7 @@ int main(int argc, char *argv[])
                         processorState = 1; // Busy
                         kill(RunningProcess->data->child_id, SIGCONT);
                         RunningProcess->data->state = 0; // Running
+                        RunningProcess->data->RRtime=getClk();
                     }
                     else
                     {
@@ -558,6 +585,15 @@ int main(int argc, char *argv[])
                                 kill(RunningProcess->data->child_id, SIGCONT);
                                 RunningProcess->data->state = 0; // Running
                                 processorState = 1;              // Busy
+                                //calc for start or resumed process
+                                if(RunningProcess!=NULL){
+                                    int wait=getClk()-(RunningProcess->data->arrive_time)-((RunningProcess->data->running_time)-(RunningProcess->data->remainingTime));
+                                    if(RunningProcess->data->firsttime){
+                                        fprintf(scheduler_log,"At time %d process %d started arr %d total %d remain %d wait %d\n",getClk(),RunningProcess->data->process_id,RunningProcess->data->arrive_time,RunningProcess->data->running_time,RunningProcess->data->remainingTime,wait);
+                                        RunningProcess->data->firsttime=false; 
+                                    }else
+                                        fprintf(scheduler_log,"At time %d process %d resumed arr %d total %d remain %d wait %d\n",getClk(),RunningProcess->data->process_id,RunningProcess->data->arrive_time,RunningProcess->data->running_time,RunningProcess->data->remainingTime,wait);
+                                }
                             }
                             else
                             {
@@ -627,12 +663,8 @@ int main(int argc, char *argv[])
 
             /*ali
              * print output file must be here also
-             */
-            int wait=getClk()-(RunningProcess->data->arrive_time)-((RunningProcess->data->running_time)-(RunningProcess->data->remainingTime));
-            if(getClk()==RunningProcess->data->arrive_time) 
-                fprintf(scheduler_log,"At time %d process %d started arr %d total %d remain %d wait %d\n",getClk(),RunningProcess->data->process_id,RunningProcess->data->arrive_time,RunningProcess->data->running_time,RunningProcess->data->remainingTime,wait); 
-            else
-                fprintf(scheduler_log,"At time %d process %d resumed arr %d total %d remain %d wait %d\n",getClk(),RunningProcess->data->process_id,RunningProcess->data->arrive_time,RunningProcess->data->running_time,RunningProcess->data->remainingTime,wait); 
+             */ 
+            //I think this place is not suitable because I won't know if process resumed or start or just continue running from last time 
         //}
     }
     // TODO implement the scheduler :)
@@ -640,6 +672,10 @@ int main(int argc, char *argv[])
     /**
      calculation of second output file must be here
     */
+    float CPUuti = 1.0*busytime/getClk();
+    CPUuti=roundf(CPUuti*10000)/100;
+    fprintf(scheduler_perf,"CPU utilization = %.2f\n");
+    
     //  printf("scheduler\n");
     shmdt(shr);
     fclose(scheduler_log);
