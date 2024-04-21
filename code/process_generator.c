@@ -56,54 +56,14 @@ int main(int argc, char *argv[])
   struct Process processes[number_of_process];
   for(int i=0;i<number_of_process;i++){
     fscanf(inputfile,"%d\t%d\t%d\t%d",&processes[i].process_id,&processes[i].arrive_time,&processes[i].running_time,&processes[i].priority);
-    // if(processes[i].running_time==0){
-    //   number_of_process--;
-    //   i--;
-    // }
+   
   }
   fclose(inputfile);
-  // for(int i=0;i<number_of_process;i++){
-  //   processes[i].process_id=i+1;
-  // }
+
   for(int i=0;i<number_of_process;i++){
     printf("%d\t%d\t%d\t%d\n",processes[i].process_id,processes[i].arrive_time,processes[i].running_time,processes[i].priority);
   }
-  // for(int i=0;i<4;i++){
-  //   printf("process[%d]arr: %d\n",i,processes[i].arrive_time);
-  // }
-  // for(int i=0;i<4;i++){
-  //   printf("process[%d]Prio: %d\n",i,processes[i].priority);
-  // }
-  // for(int i=0;i<4;i++){
-  //   printf("process[%d]id: %d\n",i,processes[i].process_id);
-  // }
-  // for(int i=0;i<4;i++){
-  //   printf("process[%d]runT: %d\n",i,processes[i].running_time);
-  // }
-  ////////dummy untill fill it
-  //here must update number_of_process
-  //number_of_process=4;//dummy
-  /*struct Process processes[4];
-  processes[0].arrive_time = 1;
-  processes[0].process_id = 1;
-  processes[0].running_time = 6;
-  processes[0].priority = 5;
-  /////
-  processes[1].arrive_time = 1;
-  processes[1].process_id = 2;
-  processes[1].running_time = 3;
-  processes[1].priority = 2;
-
-  processes[2].arrive_time = 1;
-  processes[2].process_id = 3;
-  processes[2].running_time = 4;
-  processes[2].priority = 1;
-
-  processes[3].arrive_time = 1;
-  processes[3].process_id = 4;
-  processes[3].running_time = 3;
-  processes[3].priority = 3;
-  */
+ 
   ///////////////////////Read from user////////////////////////////////
   // 2. Ask the user for the chosen scheduling algorithm and its parameters, if there are any.  //done
   while (!(algrithm_number == 1 || algrithm_number == 2 || algrithm_number == 3))
@@ -167,11 +127,11 @@ int main(int argc, char *argv[])
     else
     {
       initClk();
-      int prev = 0; // initial time is equal to 0
+      int prev = -1; // initial time is equal to 0
       int x;
       int i = 0;                            // for dummy simulation
       int send, size; // size is the size of message number_processess is the number of process in the file
-      printf("current time is %d\n", prev);
+      printf("current time is %d\n", getClk());
       // To get time use this
       while (1)
       {
@@ -180,10 +140,9 @@ int main(int argc, char *argv[])
         x = getClk(); // if he read the same time
         if (x != prev)
         {
-        //  printf("current time is %d\n", x);
-          // 6. Send the information to the scheduler at the appropriate time.//done
+       
 
-          while (i != number_of_process && processes[i].arrive_time == x) // if there is a process arrive in this time send it to scheduler
+          while (i != number_of_process && processes[i].arrive_time == x+1) // if there is a process arrive in this time send it to scheduler
           {
             printf("processes[%d]: %d\n",i,processes[i].priority);
             size = sizeof(processes[i]);
@@ -199,8 +158,7 @@ int main(int argc, char *argv[])
           }
 
           prev = x;
-          // TODO   ali
-          // 5. Create a data structure for processes and provide it with its parameters.
+       
         }
       }
     }
