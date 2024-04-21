@@ -1,12 +1,12 @@
 #include "headers.h"
 #include <string.h>
-
+#include <unistd.h> // for usleep
 /* Modify this file as needed*/
 int remainingtime;
 
 struct Time
 {
-    int runnunig_time;
+    int remining;
     int start_time;
 };
 void *shr;
@@ -24,8 +24,8 @@ void memory()
 {
 
     // memcpy(( int*)shr, &time, sizeof(int));
-    ((struct Time *)shr)->start_time = start;
-    ((struct Time *)shr)->runnunig_time = running;
+  ((struct Time *)shr)->start_time = start;//first time it runs
+   // ((struct Time *)shr)->runnunig_time = running;
 
     kill(getppid(), SIGUSR1); // to save information and notify scheduler
 }
@@ -36,7 +36,7 @@ void StopHandler(int signum)
 }
 int main(int agrc, char *argv[])
 {
-    //printf("helloFromProcess\n");
+    // printf("helloFromProcess\n");
     signal(SIGINT, ClearCock);
     signal(SIGUSR2, StopHandler);
     int shm_id = atoi(argv[1]);
@@ -46,8 +46,8 @@ int main(int agrc, char *argv[])
     // TODO it needs to get the remaining time from somewhere(sheduler)
     // remainingtime = ??;
     shr = shmat(shm_id, NULL, 0);
-   // kill(getppid(),SIGCONT);
-   kill(getpid(), SIGUSR2); // to stop it initially when create
+    // kill(getppid(),SIGCONT);
+    kill(getpid(), SIGUSR2); // to stop it initially when create
 
     if (shr == (void *)-1)
     {
@@ -61,27 +61,12 @@ int main(int agrc, char *argv[])
     start = prev;
     // time.start_time = prev; // firts time it runs
     // time.runnunig_time = 0;
-    while (remainingtime > 0)
+    while ( ((struct Time *)shr)->remining > 0)
     {
-        //printf("remainingTime: %d\n",remainingtime);
-        int x = getClk();
-
-        if (x != prev)
-        {
-
-            prev = x;
-            x = getClk();
-            running++;
-                   // printf("clock%d\n",x);
-
-            // time.runnunig_time++;
-            remainingtime--; // descrease its value
-            printf("at clock= %d remaining  =%d running time %d\n", x, remainingtime, atoi(argv[2]));
-            // remainingtime = ??;
-        }
-        
     }
+
     /////if it normally finished
+    printf("finish\n");
     destroyClk(false);
     memory();
     shmdt(shr);
