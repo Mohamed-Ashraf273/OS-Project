@@ -408,12 +408,7 @@ void printList(LinkedList *list)
     }
 }
 // 0:idle & 1:working on process
-struct statisticsP
-{
-    int RunningTime;
-    int TA;
-};
-struct statisticsP *result; // I will need
+
 ////ALGO FUNCTION
 void ALGO(LinkedList *list)
 {
