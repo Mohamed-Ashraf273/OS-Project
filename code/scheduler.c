@@ -408,7 +408,12 @@ void printList(LinkedList *list)
     }
 }
 // 0:idle & 1:working on process
-
+struct statisticsP
+{
+    int RunningTime;
+    int TA;
+};
+struct statisticsP *result; // I will need
 ////ALGO FUNCTION
 void ALGO(LinkedList *list)
 {
@@ -573,11 +578,12 @@ int main(int argc, char *argv[])
                     }
                     // wait(NULL);
                     // printf("clock1: %d\n",getClk());
-                    while (cont)
-                    {
-                    }
+                    //while (cont)
+                    //{
+                    //}
                     // printf("clock1: %d\n",getClk());
-                    cont = 1;
+                    //cont = 1;
+                    raise(SIGSTOP);
                 }
                 //  prev = getClk() - 1; // to enter algorithm
             }
