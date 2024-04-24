@@ -57,7 +57,7 @@ int main(int agrc, char *argv[])
     initClk();
 
     int prev = getClk();
-    printf("time=%d\n", prev);
+    //printf("time=%d\n", prev);
     start = prev;
     // time.start_time = prev; // firts time it runs
     // time.runnunig_time = 0;

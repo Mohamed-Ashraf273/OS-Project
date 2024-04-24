@@ -444,7 +444,7 @@ void ALGO(LinkedList *list)
             {
                 RunningProcess->data->remainingTime--;
                 ((struct Time *)shr)->remmining = RunningProcess->data->remainingTime;
-                printf("process with time = %d at clk =%d remining =%d\n", RunningProcess->data->running_time, getClk(), RunningProcess->data->remainingTime);
+            //    printf("process with time = %d at clk =%d remining =%d\n", RunningProcess->data->running_time, getClk(), RunningProcess->data->remainingTime);
                 if (RunningProcess->data->remainingTime == 0)
                 { // terminated
                     Finish();
@@ -526,10 +526,17 @@ int main(int argc, char *argv[])
         {
             while (num != number_of_system_process && msgrcv(msg_id, &process[num], size, 0, IPC_NOWAIT) != -1) // recieve a process                                                                                                               // new process I think need to e scheduled                                                                                                          // receive a process
             {
-                printf("clockrecieve: %d\n", getClk());
 
                 sprintf(process_run_time, "%d", process[num].running_time);
                 busytime += process[num].running_time;
+                if (process[num].arrive_time > getClk())//if process send process 
+                {
+                 //   printf("wait process which time is %d come at %d must be at %d\n",process[num].running_time,getClk(),process[num].arrive_time);;
+                    ALGO(&Ready);//continue but dosent but the newest one
+                    sleep(1);
+                }
+               // printf("clockrecieve: %d\n", getClk());
+
                 int child_id = fork();
                 // stop
                 if (child_id == -1)
@@ -561,8 +568,8 @@ int main(int argc, char *argv[])
                         break;
                     case 2:
                         AddSorted(&Ready, &process[num]);
-                        printList(&Ready);
-                        printf("clockbefore %d prev %d\n", getClk(), prev);
+              //          printList(&Ready);
+                   //     printf("clockbefore %d prev %d\n", getClk(), prev);
 
                         num++;
                         break;
@@ -578,11 +585,11 @@ int main(int argc, char *argv[])
                     }
                     // wait(NULL);
                     // printf("clock1: %d\n",getClk());
-                    //while (cont)
+                    // while (cont)
                     //{
                     //}
                     // printf("clock1: %d\n",getClk());
-                    //cont = 1;
+                    // cont = 1;
                     raise(SIGSTOP);
                 }
                 //  prev = getClk() - 1; // to enter algorithm
@@ -611,10 +618,10 @@ int main(int argc, char *argv[])
                             RunningProcess->data->state = 1; // stop
                             Stop();
                             AddT(&Ready, (Ready.head->data)); // return to add it in the tail of list
-                            RemH(&Ready);             // remove it from head
+                            RemH(&Ready);                     // remove it from head
                             processorState = 0;
                             RunningProcess = NULL;
-                            printList(&Ready);
+                //            printList(&Ready);
                         }
                     }
                     ALGO(&Ready);

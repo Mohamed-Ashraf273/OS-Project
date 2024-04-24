@@ -62,6 +62,7 @@ int main(int argc, char *argv[])
 
   for(int i=0;i<number_of_process;i++){
     printf("%d\t%d\t%d\t%d\n",processes[i].process_id,processes[i].arrive_time,processes[i].running_time,processes[i].priority);
+  
   }
  
   ///////////////////////Read from user////////////////////////////////
@@ -75,7 +76,7 @@ int main(int argc, char *argv[])
 
     scanf("%d", &algrithm_number);
   }
-  if (algrithm_number == 1)
+  while (algrithm_number == 1&&slice<=0)
   {
     printf("RR needs a time slice it is numbers of seconds that RR runs a process please enter it \n");
     scanf("%d", &slice);
@@ -144,7 +145,7 @@ int main(int argc, char *argv[])
 
           while (i != number_of_process && processes[i].arrive_time == x+1) // if there is a process arrive in this time send it to scheduler
           {
-            printf("processes[%d]: %d\n",i,processes[i].priority);
+            //printf("processes[%d]: %d\n",i,processes[i].priority);
             size = sizeof(processes[i]);
             //printf("SendingTime: %d\n",getClk());
             send = msgsnd(msg_id, &(processes[i]), size, !IPC_NOWAIT);
