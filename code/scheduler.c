@@ -310,7 +310,7 @@ void AddSortedPriority(LinkedList *list, struct Process *data)
         Node *current = list->head;
         if (list->head->data->arrive_time != data->arrive_time) // not came at same time
         {
-            while (current->next != NULL && data->priority > current->next->data->priority) // first one is running
+            while (current->next != NULL && data->priority >= current->next->data->priority) // first one is running
             {
                 current = current->next;
             }
@@ -330,7 +330,7 @@ void AddSortedPriority(LinkedList *list, struct Process *data)
         }
         else
         {
-            while (current != NULL && data->priority > current->data->priority) // came at same time
+            while (current != NULL && data->priority >= current->data->priority) // came at same time
             {
 
                 current = current->next;
@@ -419,7 +419,7 @@ struct statisticsP *result; // I will need
 ////ALGO FUNCTION
 void ALGO(LinkedList *list)
 {
-    printf("hello clk %d\n", getClk());
+   //printf("hello clk %d\n", getClk());
     if (list->head != NULL)
     {
         if (RunningProcess == NULL && list->head != NULL)
