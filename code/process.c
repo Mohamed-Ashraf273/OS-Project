@@ -66,7 +66,7 @@ int main(int agrc, char *argv[])
     }
 
     /////if it normally finished
-    printf("finish\n");
+    //printf("finish\n");
     destroyClk(false);
     memory();
     shmdt(shr);
