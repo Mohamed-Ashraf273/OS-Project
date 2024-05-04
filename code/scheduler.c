@@ -61,7 +61,7 @@ int slice=0;
 
 void Finish()
 {
-    printf("Finished\n");
+    //printf("Finished\n");
     int TA = getClk() - (RunningProcess->data->arrive_time);
     int wait = (RunningProcess->data->start) - (RunningProcess->data->arrive_time);
     float WTA = (float)wait / (RunningProcess->data->running_time);
@@ -181,7 +181,7 @@ void AddSorted(LinkedList *list, struct Process *data)
                 }
                 else
                 {
-                    while (current != NULL && current->data->remainingTime < newNode->data->remainingTime)
+                    while (current != NULL && current->data->remainingTime <= newNode->data->remainingTime)
                     {
                         prev = current;
                         current = current->next;
@@ -222,7 +222,7 @@ void AddSorted(LinkedList *list, struct Process *data)
             {
                 Node *prev = Ready.head;
                 Node *current = prev->next;
-                while (current != NULL && current->data->remainingTime < newNode->data->remainingTime)
+                while (current != NULL && current->data->remainingTime <= newNode->data->remainingTime)
                 {
                     prev = current;
                     current = current->next;
@@ -245,7 +245,7 @@ void AddSorted(LinkedList *list, struct Process *data)
         {
             Node *prev = NULL;
             Node *current = Ready.head;
-            while (current != NULL && current->data->remainingTime < newNode->data->remainingTime)
+            while (current != NULL && current->data->remainingTime <= newNode->data->remainingTime)
             {
                 prev = current;
                 current = current->next;

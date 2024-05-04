@@ -154,7 +154,7 @@ int main(int argc, char *argv[])
               printf("Error when try to send message to scheduler\n");
               kill(getpid(), SIGINT);
             }
-            printf("process send\n");
+           // printf("process send\n");
             i++; // this must change by the number of processes arrived from the file
           }
 
